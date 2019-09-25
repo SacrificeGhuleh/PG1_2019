@@ -5,3 +5,5 @@
 /src/pg/pg1_embree/pg1_embree.vcxproj.user
 /src/pg/pg1_embree/imgui.ini
 /src/pg/pg1_embree/convert.py
+/cmake-build-debug/
+/.idea
