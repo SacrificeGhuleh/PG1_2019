@@ -105,8 +105,43 @@ void Raytracer::LoadScene( const std::string file_name )
 
 Color4f Raytracer::get_pixel( const int x, const int y, const float t )
 {
-	// TODO generate primary ray and perform ray cast on the scene
-	return Color4f{ 1.0f, 0.0f, 1.0f, 1.0f };
+  RTCRay ray = camera_.GenerateRay(x, y);
+  
+  // setup a hit
+  RTCHit hit;
+  hit.geomID = RTC_INVALID_GEOMETRY_ID;
+  hit.primID = RTC_INVALID_GEOMETRY_ID;
+  hit.Ng_x = 0.0f; // geometry normal
+  hit.Ng_y = 0.0f;
+  hit.Ng_z = 0.0f;
+  
+  // merge ray and hit structures
+  RTCRayHit ray_hit;
+  ray_hit.ray = ray;
+  ray_hit.hit = hit;
+  
+  // intersect ray with the scene
+  RTCIntersectContext context;
+  rtcInitIntersectContext(&context);
+  rtcIntersect1(scene_, &context, &ray_hit);
+  
+  if (ray_hit.hit.geomID != RTC_INVALID_GEOMETRY_ID) {
+    // we hit something
+    RTCGeometry geometry = rtcGetGeometry(scene_, ray_hit.hit.geomID);
+    Normal3f normal;
+    // get interpolated normal
+    rtcInterpolate0(geometry, ray_hit.hit.primID, ray_hit.hit.u, ray_hit.hit.v,
+                    RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 0, &normal.x, 3);
+    // and texture coordinates
+    Coord2f tex_coord;
+    rtcInterpolate0(geometry, ray_hit.hit.primID, ray_hit.hit.u, ray_hit.hit.v,
+                    RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 1, &tex_coord.u, 2);
+    //printf("normal = (%0.3f, %0.3f, %0.3f)\n", normal.x, normal.y, normal.z);
+    //printf("tex_coord = (%0.3f, %0.3f)\n", tex_coord.u, tex_coord.v);
+    
+    return Color4f{1.f, 1.0f, 1.0f, 1.0f};
+  }
+  return Color4f{0.f, 0.0f, 0.0f, 1.0f};
 }
 
 int Raytracer::Ui()
@@ -117,8 +152,8 @@ int Raytracer::Ui()
 	// we use a Begin/End pair to created a named window
 	ImGui::Begin( "Ray Tracer Params" );
 	
-	ImGui::Text( "Surfaces = %d", surfaces_.size() );
-	ImGui::Text( "Materials = %d", materials_.size() );
+	ImGui::Text( "Surfaces = %zu", surfaces_.size() );
+	ImGui::Text( "Materials = %zu", materials_.size() );
 	ImGui::Separator();
 	ImGui::Checkbox( "Vsync", &vsync_ );
 	

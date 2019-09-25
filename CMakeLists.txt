@@ -6,6 +6,10 @@ SET(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes")
 
+#set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
 SET(SRC_ROOT src/pg/pg1_embree)
 SET(LIB_ROOT src/libs)
 SET(IMGUI_ROOT ${LIB_ROOT}/imgui)
@@ -97,8 +101,16 @@ SET(SRC
     ${SRC_ROOT}/vertex.cpp
     ${SRC_ROOT}/vertex.h)
 
+
+
 ADD_EXECUTABLE(${PROJECT_NAME} ${SRC} ${IMGUI} ${PCH})
 
 #ADD_PRECOMPILED_HEADER(${PROJECT_NAME} ${SRC_ROOT}/stdafx.h SOURCE_CXX ${SRC_ROOT}/stdafx.cpp FORCEINCLUDE)
 
 target_link_libraries(${PROJECT_NAME} ${EMBREE_LIBRARY} D3DCompiler d3d11 libfreeimage xinput)
+
+file(COPY data DESTINATION ${CMAKE_BINARY_DIR})
+
+#add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+#                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+#                   data $<TARGET_FILE_DIR:${PROJECT_NAME}>/data)
