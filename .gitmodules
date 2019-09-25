@@ -1,0 +1,6 @@
+[submodule "cmake-precompiled-header"]
+	path = cmake-precompiled-header
+	url = https://github.com/larsch/cmake-precompiled-header.git
+[submodule "src/libs/imgui"]
+	path = src/libs/imgui
+	url = https://github.com/ocornut/imgui.git
