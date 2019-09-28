@@ -1,9 +1,9 @@
-#include "stdafx.h"
-#include "tutorials.h"
-#include "raytracer.h"
-#include "structs.h"
-#include "texture.h"
-#include "mymath.h"
+#include <stdafx.h>
+#include <tutorials.h>
+#include <engine/raytracer.h>
+#include <utils/structs.h>
+#include <geometry/texture.h>
+#include <Math/mymath.h>
 
 /* error reporting function */
 void error_handler(void *user_ptr, const RTCError code, const char *str) {

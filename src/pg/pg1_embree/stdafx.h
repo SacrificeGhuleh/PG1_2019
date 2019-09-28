@@ -1,7 +1,7 @@
 #ifndef PCH_H
 #define PCH_H
 
-#include "targetver.h"
+#include <targetver.h>
 
 #define _CRT_SECURE_NO_WARNINGS
 

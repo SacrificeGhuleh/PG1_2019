@@ -1,5 +1,5 @@
-#include "stdafx.h"
-#include "tutorials.h"
+#include <stdafx.h>
+#include <tutorials.h>
 
 int main() {
   printf("PG1, (c)2011-2018 Tomas Fabian\n\n");
