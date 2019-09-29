@@ -16,7 +16,7 @@ NormalsShader::NormalsShader(Camera *camera, Light *light, RTCScene *rtcscene, s
                              std::vector<Material *> *materials) : Shader(camera, light, rtcscene, surfaces,
                                                                           materials) {}
 
-Color4f NormalsShader::traceRay(const RTCRayHit &rayHit) {
+Color4f NormalsShader::traceRay(const RTCRayHit &rayHit, int depth) {
   if (rayHit.hit.geomID == RTC_INVALID_GEOMETRY_ID) {
     return *defaultBgColor_;
   }

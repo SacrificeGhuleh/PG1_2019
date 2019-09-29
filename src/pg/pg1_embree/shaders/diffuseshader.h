@@ -10,7 +10,7 @@
 
 class DiffuseShader : public Shader{
 public:
-  virtual Color4f traceRay(const RTCRayHit& rayHit) override;
+  virtual Color4f traceRay(const RTCRayHit &rayHit, int depth = 0) override;
 
   DiffuseShader(Camera *camera, Light *light, RTCScene *rtcscene, std::vector<Surface *> *surfaces,
                 std::vector<Material *> *materials);

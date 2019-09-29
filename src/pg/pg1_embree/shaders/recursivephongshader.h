@@ -9,12 +9,17 @@
 #include <shaders/shader.h>
 #include <stdafx.h>
 
-class RecursivePhongShader : Shader {
-  virtual Color4f traceRay(const RTCRayHit& rayHit) override;
-
+class RecursivePhongShader : public Shader {
 public:
+  virtual Color4f traceRay(const RTCRayHit &rayHit, int depth = 0) override;
+  
+  virtual Color4f getPixel(const int x, const int y) override;
+  
   RecursivePhongShader(Camera *camera, Light *light, RTCScene *rtcscene, std::vector<Surface *> *surfaces,
                        std::vector<Material *> *materials);
+  
+  static int recursionDepth;
+  static float reflectivityCoef;
 };
 
 

@@ -21,11 +21,10 @@ PhongShader::PhongShader(Camera *camera, Light *light, RTCScene *rtcScene, std::
                          std::vector<Material *> *materials) : Shader(camera, light, rtcScene, surfaces, materials) {}
 
 
-Color4f PhongShader::traceRay(const RTCRayHit &rayHit) {
+Color4f PhongShader::traceRay(const RTCRayHit &rayHit, int depth) {
   if(rayHit.hit.geomID == RTC_INVALID_GEOMETRY_ID){
     return *defaultBgColor_;
   }
-  
   
   RTCGeometry geometry = rtcGetGeometry(*rtcScene_, rayHit.hit.geomID);
   Normal3f normal;
@@ -46,6 +45,7 @@ Color4f PhongShader::traceRay(const RTCRayHit &rayHit) {
   if (phongAmbient_ || phongDiffuse_ || phongSpecular_) {
     //ambient
     Vector3 ambient = Vector3(ambientValue_) * material->ambient;
+    
     //diffuse
     Vector3 origin(&rayHit.ray.org_x);
     Vector3 direction(&rayHit.ray.dir_x);
@@ -54,21 +54,22 @@ Color4f PhongShader::traceRay(const RTCRayHit &rayHit) {
     lightDir.Normalize();
     normal.Normalize();
     float diff = normal.DotProduct(lightDir);
-    
     if (correctNormals_) {
+      //Flip normal if invalid
       if (diff < 0) {
         normal *= -1.f;
         diff *= -1.f;
       }
     }
-    
     Vector3 diffuse = diff * getDiffuseColor(material, tex_coord);
+    
     //specular
     Vector3 viewDir = (origin - worldPos);
     viewDir.Normalize();
     Vector3 reflectDir = normal.reflect(lightDir);
     float spec = powf(viewDir.DotProduct(reflectDir), material->shininess);
     Vector3 specular(specularStrength_ * spec);
+    
     //sum results
     Vector3 resultColor(0.f);
     if (phongAmbient_) {

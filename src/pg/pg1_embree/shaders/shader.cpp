@@ -58,14 +58,14 @@ Color3f Shader::getDiffuseColor(const Material* material, const Coord2f& tex_coo
 
 Color4f Shader::getPixel(const int x, const int y) {
   RTCRayHit ray = shootRay(x,y);
-  return traceRay(ray);
+  return traceRay(ray, 0);
 }
 
 void Shader::setDefaultBgColor(Color4f *defaultBgColor) {
   defaultBgColor_ = defaultBgColor;
 }
 
-Color4f Shader::traceRay(const RTCRayHit& rayHit) {
+Color4f Shader::traceRay(const RTCRayHit &rayHit, int depth) {
   if(rayHit.hit.geomID == RTC_INVALID_GEOMETRY_ID){
     return *defaultBgColor_;
   }

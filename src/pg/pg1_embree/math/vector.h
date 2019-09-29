@@ -19,13 +19,17 @@ struct Vector2 {
     
   };
   
+  explicit Vector2(const float *v);
+  
   Vector2(float fx, float fy) : x{fx}, y{fy} {}
   
   Vector2(const Vector2 &v) : Vector2(v.x, v.y) {}
   
-  Vector2(float fxy = 0.f) : Vector2(fxy, fxy) {}
+  explicit Vector2(float fxy = 0.f) : Vector2(fxy, fxy) {}
   
-  Vector2(float *array);
+  void Print();
+  
+  explicit Vector2(float *array);
   
   friend Vector2 operator-(const Vector2 &v);
   
@@ -70,7 +74,7 @@ struct Vector3 {
       float b; /*!< Třetí složka vektoru. */
     };
     
-    float data[3]; /*!< Pole složek vektoru. */
+    float data[3]{}; /*!< Pole složek vektoru. */
     
     
   };
@@ -153,7 +157,7 @@ struct Vector3 {
   
   void Print();
   
-  Vector3 reflect(const Vector3 &lightVector);
+  Vector3 reflect(const Vector3 &direction);
   
   // --- operátory ------
   
@@ -188,20 +192,30 @@ struct Vector4 {
       float b; /*!< Třetí složka vektoru. */
       float a; /*!< Čtvrtá složka vektoru. */
     };
-    float data[4]; /*!< Pole složek vektoru. */
+    struct {
+      float x; /*!< První složka vektoru. */
+      float y; /*!< Druhá složka vektoru. */
+      float z; /*!< Třetí složka vektoru. */
+      float w; /*!< Čtvrtá složka vektoru. */
+    };
+    float data[4]{}; /*!< Pole složek vektoru. */
   };
   
   Vector4(float fr, float fg, float fb, float fa) : r{fr}, g{fg}, b{fb}, a{fa} {}
   
-  Vector4(const Vector2 &v, float fb = 0.f, float fa = 0.f) : Vector4(v.x, v.y, fb, fa) {}
+  explicit Vector4(const Vector2 &v, float fb = 0.f, float fa = 0.f) : Vector4(v.x, v.y, fb, fa) {}
   
-  Vector4(const Vector3 &v, float fa = 0.f) : Vector4(v.x, v.y, v.z, fa) {}
+  explicit Vector4(const Vector3 &v, float fa = 0.f) : Vector4(v.x, v.y, v.z, fa) {}
   
   Vector4(const Vector4 &v) : Vector4(v.r, v.g, v.b, v.a) {}
   
-  Vector4(float rgba = 0.f) : Vector4(rgba, rgba, rgba, rgba) {}
+  explicit Vector4(float rgba = 0.f) : Vector4(rgba, rgba, rgba, rgba) {}
   
-  Vector4(float *array);
+  explicit Vector4(float *array);
+  
+  Vector3 getRgb(){return Vector3(r,g,b);}
+  
+  void Print();
   
   friend Vector4 operator-(const Vector4 &v);
   

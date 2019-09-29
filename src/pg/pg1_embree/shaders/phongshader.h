@@ -20,7 +20,7 @@ public:
   static float ambientValue_;
   static bool correctNormals_;
   
-  virtual Color4f traceRay(const RTCRayHit& rayHit) override;
+  virtual Color4f traceRay(const RTCRayHit &rayHit, int depth = 0) override;
 };
 
 

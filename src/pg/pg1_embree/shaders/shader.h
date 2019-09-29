@@ -25,7 +25,7 @@ public:
          std::vector<Material *> *materials);
   
   virtual Color4f getPixel(const int x, const int y);
-  virtual Color4f traceRay(const RTCRayHit& rayHit);
+  virtual Color4f traceRay(const RTCRayHit &rayHit, int depth = 0);
   
   RTCRayHit shootRay(const float x, const float y);
   

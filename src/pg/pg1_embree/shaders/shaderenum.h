@@ -10,6 +10,7 @@ enum class ShaderEnum : int{
   Diffuse,
   Phong,
   Normals,
+  RecursivePhong,
   ShadersCount
 };
 

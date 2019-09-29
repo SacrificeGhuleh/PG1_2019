@@ -2,10 +2,12 @@
 #include <engine/raytracer.h>
 #include <tutorials.h>
 #include <geometry/objloader.h>
-#include <shaders/phongshader.h>
 #include <engine/light.h>
+#include <shaders/phongshader.h>
 #include <shaders/normalsshader.h>
 #include <shaders/diffuseshader.h>
+#include <shaders/recursivephongshader.h>
+#include <utils/utils.h>
 
 Raytracer::Raytracer(const int width, const int height,
                      const float fov_y, const Vector3 view_from, const Vector3 view_at,
@@ -29,6 +31,9 @@ Raytracer::Raytracer(const int width, const int height,
   shaders_[static_cast<int>(ShaderEnum::Phong)] = new PhongShader(&camera_, light_, &scene_, &surfaces_, &materials_);
   shaders_[static_cast<int>(ShaderEnum::Normals)] = new NormalsShader(&camera_, light_, &scene_, &surfaces_,
                                                                       &materials_);
+  shaders_[static_cast<int>(ShaderEnum::RecursivePhong)] = new RecursivePhongShader(&camera_, light_, &scene_,
+                                                                                    &surfaces_,
+                                                                                    &materials_);
   
   for (auto shader : shaders_) {
     shader->setDefaultBgColor(&defaultBgColor_);
@@ -37,6 +42,9 @@ Raytracer::Raytracer(const int width, const int height,
 }
 
 Raytracer::~Raytracer() {
+  for(auto shader : shaders_){
+    SAFE_DELETE(shader);
+  }
   ReleaseDeviceAndScene();
 }
 
@@ -125,7 +133,7 @@ Color4f Raytracer::get_pixel(const int x, const int y, const float t) {
 }
 
 int Raytracer::Ui() {
-  static const char *shaderNames[] = {"None", "Diffuse", "Phong", "Normals"};
+  static const char *shaderNames[] = {"None", "Diffuse", "Phong", "Normals", "Recursive Phong"};
   
   // we use a Begin/End pair to created a named window
   ImGui::Begin("Ray Tracer Params", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
@@ -156,6 +164,12 @@ int Raytracer::Ui() {
       ImGui::Checkbox("Ambient", &PhongShader::phongAmbient_);
       ImGui::Checkbox("Diffuse", &PhongShader::phongDiffuse_);
       ImGui::Checkbox("Specular", &PhongShader::phongSpecular_);
+      
+      ImGui::Separator();
+      
+      ImGui::SliderFloat("Ambient Slider", &PhongShader::ambientValue_, 0.0f, 30.0f);
+      ImGui::SliderFloat("Specular strength Slider", &PhongShader::specularStrength_, 0.0f, 30.0f);
+      
       break;
     }
     case ShaderEnum::Normals: {
@@ -165,11 +179,15 @@ int Raytracer::Ui() {
     case ShaderEnum::ShadersCount: {
       break;
     }
+    case ShaderEnum::RecursivePhong: {
+      ImGui::Separator();
+  
+      ImGui::SliderInt("Recursion", &RecursivePhongShader::recursionDepth, 0, 10);
+      ImGui::SliderFloat("Reflectivity", &RecursivePhongShader::reflectivityCoef, 0, 1);
+      break;
+    }
   }
   ImGui::Separator();
-  
-  ImGui::SliderFloat("Ambient Slider", &PhongShader::ambientValue_, 0.0f, 30.0f);
-  ImGui::SliderFloat("Specular strength Slider", &PhongShader::specularStrength_, 0.0f, 30.0f);
   
   ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
               ImGui::GetIO().Framerate);
