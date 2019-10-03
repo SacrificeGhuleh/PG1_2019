@@ -13,7 +13,7 @@ class RecursivePhongShader : public Shader {
 public:
   virtual Color4f traceRay(const RTCRayHit &rayHit, int depth = 0) override;
   
-  virtual Color4f getPixel(const int x, const int y) override;
+  //virtual Color4f getPixel(const int x, const int y) override;
   
   RecursivePhongShader(Camera *camera, Light *light, RTCScene *rtcscene, std::vector<Surface *> *surfaces,
                        std::vector<Material *> *materials);

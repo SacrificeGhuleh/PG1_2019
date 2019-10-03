@@ -9,7 +9,6 @@
 #include <engine/light.h>
 #include <engine/camera.h>
 
-int RecursivePhongShader::recursionDepth = 1;
 float RecursivePhongShader::reflectivityCoef = 1.f;
 
 RecursivePhongShader::RecursivePhongShader(Camera *camera, Light *light, RTCScene *rtcscene,
@@ -91,7 +90,7 @@ Color4f RecursivePhongShader::traceRay(const RTCRayHit &rayHit, int depth) {
   return Color4f(ambient + specular + diffuse, 1.0f);
 }
 
-Color4f RecursivePhongShader::getPixel(const int x, const int y) {
-  RTCRayHit ray = shootRay(x, y);
-  return traceRay(ray, recursionDepth);
-}
+//Color4f RecursivePhongShader::getPixel(const int x, const int y) {
+//  RTCRayHit ray = shootRay(x, y);
+//  return traceRay(ray, recursionDepth);
+//}

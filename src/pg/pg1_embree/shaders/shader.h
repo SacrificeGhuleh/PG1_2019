@@ -42,6 +42,9 @@ public:
   void setDefaultBgColor(Color4f *defaultBgColor);
   static bool flipTextureU_;
   static bool flipTextureV_;
+  static bool supersampling_;
+  static int samplingSize_;
+  static int recursionDepth_;
 };
 
 

@@ -159,6 +159,8 @@ struct Vector3 {
   
   Vector3 reflect(const Vector3 &direction);
   
+  static Vector3 Reflect(const Vector3& I, const Vector3& N);
+  
   // --- operátory ------
   
   friend Vector3 operator-(const Vector3 &v);
@@ -214,6 +216,7 @@ struct Vector4 {
   explicit Vector4(float *array);
   
   Vector3 getRgb(){return Vector3(r,g,b);}
+  
   
   void Print();
   

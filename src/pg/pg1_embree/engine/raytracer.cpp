@@ -42,7 +42,7 @@ Raytracer::Raytracer(const int width, const int height,
 }
 
 Raytracer::~Raytracer() {
-  for(auto shader : shaders_){
+  for (auto shader : shaders_) {
     SAFE_DELETE(shader);
   }
   ReleaseDeviceAndScene();
@@ -151,6 +151,10 @@ int Raytracer::Ui() {
   ImGui::Checkbox("Flip texture V", &Shader::flipTextureV_);
   
   
+  ImGui::Checkbox("Supersampling", &Shader::supersampling_);
+  if(Shader::supersampling_){
+    ImGui::SliderInt("Samples", &Shader::samplingSize_, 1, 10);
+  }
   switch (activeShader_) {
     
     case ShaderEnum::None: {
@@ -176,14 +180,14 @@ int Raytracer::Ui() {
       ImGui::Checkbox("Correct normals", &NormalsShader::correctNormals_);
       break;
     }
-    case ShaderEnum::ShadersCount: {
-      break;
-    }
     case ShaderEnum::RecursivePhong: {
       ImGui::Separator();
-  
-      ImGui::SliderInt("Recursion", &RecursivePhongShader::recursionDepth, 0, 10);
+      
+      ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 0, 10);
       ImGui::SliderFloat("Reflectivity", &RecursivePhongShader::reflectivityCoef, 0, 1);
+      break;
+    }
+    case ShaderEnum::ShadersCount: {
       break;
     }
   }
