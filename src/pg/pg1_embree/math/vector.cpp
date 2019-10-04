@@ -5,6 +5,7 @@
 #include <stdafx.h>
 #include <math/vector.h>
 #include <math/mymath.h>
+
 /* *****************************************************************************
  * VECTOR 2
  * ****************************************************************************/
@@ -208,21 +209,21 @@ void operator/=(Vector3 &v, const float a) {
 }
 
 
-Vector3 Vector3::reflect(const Vector3& direction) {
+Vector3 Vector3::reflect(const Vector3 &direction) {
   Vector3 n_norm = *this;
   Vector3 n_dir = direction;
   
   
   n_dir.Normalize();
   n_norm.Normalize();
-  //return Reflect(n_dir, n_norm);
-  return (2 * (n_norm.DotProduct(-n_dir)) * n_norm - (-n_dir));
-  //return 2 * (n_norm.DotProduct(n_dir)) * n_norm - n_dir;
+//  return Reflect(n_dir, n_norm);
+//  return (2 * (n_norm.DotProduct(-n_dir)) * n_norm - (-n_dir));
+  return 2 * (n_norm.DotProduct(n_dir)) * n_norm - n_dir;
 }
 
-Vector3 Vector3::Reflect(const Vector3& I, const Vector3& N) {
-  return I - N * N.DotProduct(I) * Vector3(2);
-//  return I - N * I.DotProduct(N) * Vector3(2);
+Vector3 Vector3::Reflect(const Vector3 &I, const Vector3 &N) {
+//  return I - N * N.DotProduct(I) * 2;
+  return I - N * I.DotProduct(N) * 2;
 }
 
 /* *****************************************************************************

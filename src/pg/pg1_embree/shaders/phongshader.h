@@ -18,7 +18,6 @@ public:
   static bool phongSpecular_;
   static float specularStrength_;
   static float ambientValue_;
-  static bool correctNormals_;
   
   virtual Color4f traceRay(const RTCRayHit &rayHit, int depth = 0) override;
 };

@@ -82,7 +82,7 @@ SET(ENGINE
     src/pg/pg1_embree/engine/simpleguidx11.cpp
     src/pg/pg1_embree/engine/simpleguidx11.h
     src/pg/pg1_embree/engine/light.cpp
-    src/pg/pg1_embree/engine/light.h)
+    src/pg/pg1_embree/engine/light.h src/pg/pg1_embree/engine/sphericalmap.cpp src/pg/pg1_embree/engine/sphericalmap.h)
 
 SET(GEOMETRY
     src/pg/pg1_embree/geometry/material.cpp
@@ -126,7 +126,7 @@ SET(SRC
     src/pg/pg1_embree/targetver.h
     src/pg/pg1_embree/tutorials.cpp
     src/pg/pg1_embree/tutorials.h
-    src/pg/pg1_embree/stdafx.cpp)
+    src/pg/pg1_embree/stdafx.cpp src/pg/pg1_embree/shaders/glassshader.cpp src/pg/pg1_embree/shaders/glassshader.h)
 
 ADD_EXECUTABLE(${PROJECT_NAME} ${SRC} ${UTILS} ${SHADERS} ${MATH} ${GEOMETRY} ${ENGINE} ${IMGUI} ${PCH})
 

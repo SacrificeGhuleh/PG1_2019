@@ -10,7 +10,6 @@
 #include <engine/camera.h>
 
 
-bool NormalsShader::correctNormals_ = false;
 
 NormalsShader::NormalsShader(Camera *camera, Light *light, RTCScene *rtcscene, std::vector<Surface *> *surfaces,
                              std::vector<Material *> *materials) : Shader(camera, light, rtcscene, surfaces,
@@ -18,7 +17,7 @@ NormalsShader::NormalsShader(Camera *camera, Light *light, RTCScene *rtcscene, s
 
 Color4f NormalsShader::traceRay(const RTCRayHit &rayHit, int depth) {
   if (rayHit.hit.geomID == RTC_INVALID_GEOMETRY_ID) {
-    return *defaultBgColor_;
+    return getBackgroundColor(rayHit);
   }
   RTCGeometry geometry = rtcGetGeometry(*rtcScene_, rayHit.hit.geomID);
   /**

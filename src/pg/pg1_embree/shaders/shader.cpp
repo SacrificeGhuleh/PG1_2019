@@ -2,13 +2,20 @@
 // Created by zvone on 26-Sep-19.
 //
 #include <stdafx.h>
+
 #include <shaders/shader.h>
+
 #include <geometry/surface.h>
+
 #include <engine/light.h>
 #include <engine/camera.h>
+#include <engine/sphericalmap.h>
+
 #include <geometry/material.h>
 
 bool Shader::flipTextureU_ = false;
+bool Shader::sphereMap_ = true;
+bool Shader::correctNormals_ = true;
 bool Shader::flipTextureV_ = true;
 bool Shader::supersampling_ = false;
 int Shader::samplingSize_ = 3;
@@ -16,7 +23,8 @@ int Shader::recursionDepth_ = 1;
 
 Shader::Shader(Camera *camera, Light *light, RTCScene *rtcScene, std::vector<Surface *> *surfaces,
                std::vector<Material *> *materials) : camera_{camera}, light_{light}, rtcScene_{rtcScene},
-                                                     surfaces_{surfaces}, materials_{materials} {}
+                                                     surfaces_{surfaces}, materials_{materials},
+                                                     sphericalMap_{nullptr} {}
 
 RTCRayHit Shader::shootRay(const float x, const float y) {
   RTCRay ray = camera_->GenerateRay(x, y);
@@ -88,8 +96,22 @@ void Shader::setDefaultBgColor(Color4f *defaultBgColor) {
 
 Color4f Shader::traceRay(const RTCRayHit &rayHit, int depth) {
   if (rayHit.hit.geomID == RTC_INVALID_GEOMETRY_ID) {
-    return *defaultBgColor_;
+    return getBackgroundColor(rayHit);
   }
   
   return Color4f(0.0f, 1.0f, 1.0f, 1.0f);
+}
+
+void Shader::setSphericalMap(SphericalMap *sphericalMap) {
+  sphericalMap_ = sphericalMap;
+}
+
+Color4f Shader::getBackgroundColor(const RTCRayHit &rayHit) {
+  if (sphericalMap_ != nullptr && sphereMap_) {
+    Vector3 rayDir(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
+    rayDir.Normalize();
+    return Color4f(sphericalMap_->texel(rayDir), 1.0f);
+  }
+  
+  return *defaultBgColor_;
 }

@@ -14,7 +14,6 @@ bool PhongShader::phongDiffuse_ = true;
 bool PhongShader::phongSpecular_ = true;
 float PhongShader::specularStrength_ = 1.f;
 float PhongShader::ambientValue_ = 1.f;
-bool PhongShader::correctNormals_ = true;
 
 
 PhongShader::PhongShader(Camera *camera, Light *light, RTCScene *rtcScene, std::vector<Surface *> *surfaces,
@@ -23,7 +22,7 @@ PhongShader::PhongShader(Camera *camera, Light *light, RTCScene *rtcScene, std::
 
 Color4f PhongShader::traceRay(const RTCRayHit &rayHit, int depth) {
   if(rayHit.hit.geomID == RTC_INVALID_GEOMETRY_ID){
-    return *defaultBgColor_;
+    return getBackgroundColor(rayHit);
   }
   
   RTCGeometry geometry = rtcGetGeometry(*rtcScene_, rayHit.hit.geomID);
@@ -44,7 +43,7 @@ Color4f PhongShader::traceRay(const RTCRayHit &rayHit, int depth) {
   
   if (phongAmbient_ || phongDiffuse_ || phongSpecular_) {
     //ambient
-    Vector3 ambient = Vector3(ambientValue_) * material->ambient;
+    Vector3 ambient = material->ambient;
     
     //diffuse
     Vector3 origin(&rayHit.ray.org_x);

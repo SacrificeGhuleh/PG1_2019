@@ -14,7 +14,6 @@ public:
                 std::vector<Material *> *materials);
 
   virtual Color4f traceRay(const RTCRayHit &rayHit, int depth = 0) override;
-  static bool correctNormals_;
 };
 
 

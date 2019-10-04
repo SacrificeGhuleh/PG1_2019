@@ -6,6 +6,8 @@
 #include <engine/camera.h>
 #include <shaders/shaderenum.h>
 
+class SphericalMap;
+
 class Shader;
 
 class Light;
@@ -58,4 +60,5 @@ private:
   bool phongDiffuse_;
   bool phongSpecular_;
   Color4f defaultBgColor_;
+  SphericalMap *sphericalMap_;
 };

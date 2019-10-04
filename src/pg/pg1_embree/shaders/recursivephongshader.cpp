@@ -3,9 +3,9 @@
 //
 
 #include <stdafx.h>
+#include <shaders/recursivephongshader.h>
 #include <math/vector.h>
 #include <geometry/material.h>
-#include <shaders/recursivephongshader.h>
 #include <engine/light.h>
 #include <engine/camera.h>
 
@@ -17,7 +17,7 @@ RecursivePhongShader::RecursivePhongShader(Camera *camera, Light *light, RTCScen
 
 Color4f RecursivePhongShader::traceRay(const RTCRayHit &rayHit, int depth) {
   if (rayHit.hit.geomID == RTC_INVALID_GEOMETRY_ID) {
-    return *defaultBgColor_;
+    return getBackgroundColor(rayHit);
   }
   
   RTCGeometry geometry = rtcGetGeometry(*rtcScene_, rayHit.hit.geomID);
@@ -47,9 +47,11 @@ Color4f RecursivePhongShader::traceRay(const RTCRayHit &rayHit, int depth) {
   float diff = normal.DotProduct(lightDir);
   
   //Flip normal if invalid
-  if (diff < 0) {
-    normal *= -1.f;
-    diff *= -1.f;
+  if (correctNormals_) {
+    if (diff < 0) {
+      normal *= -1.f;
+      diff *= -1.f;
+    }
   }
   
   Vector3 diffuse = diff * getDiffuseColor(material, tex_coord);
@@ -63,8 +65,25 @@ Color4f RecursivePhongShader::traceRay(const RTCRayHit &rayHit, int depth) {
   
   if (depth > 0) {
     
-    RTCRay reflectedRay = {worldPos.x, worldPos.y, worldPos.z, 0.01f, reflectDir.x, reflectDir.y, reflectDir.z, 0,
-                           FLT_MAX, 0, 0, 0};
+    RTCRay reflectedRay;
+    
+    reflectedRay.org_x = worldPos.x;    // x coordinate of ray origin
+    reflectedRay.org_y = worldPos.y;    // y coordinate of ray origin
+    reflectedRay.org_z = worldPos.z;    // z coordinate of ray origin
+    
+    reflectedRay.tnear = 2.f;           // start of ray segment
+    
+    reflectedRay.dir_x = reflectDir.x;  // x coordinate of ray direction
+    reflectedRay.dir_y = reflectDir.y;  // y coordinate of ray direction
+    reflectedRay.dir_z = reflectDir.z;  // z coordinate of ray direction
+    
+    reflectedRay.time = 0;              // time of this ray for motion blur
+    reflectedRay.tfar = FLT_MAX;        // end of ray segment (set to hit distance)
+    reflectedRay.mask = 0;              // ray mask
+    reflectedRay.id = 0;                // ray ID
+    reflectedRay.flags = 0;             // ray flags
+    
+    
     RTCHit reflectedHit;
     reflectedHit.geomID = RTC_INVALID_GEOMETRY_ID;
     reflectedHit.primID = RTC_INVALID_GEOMETRY_ID;
@@ -83,14 +102,9 @@ Color4f RecursivePhongShader::traceRay(const RTCRayHit &rayHit, int depth) {
     rtcIntersect1(*rtcScene_, &context, &reflectedRayHit);
     Color4f reflected = traceRay(reflectedRayHit, depth - 1);
     return Color4f(
-        ambient + diffuse + (Vector3(reflected.r, reflected.g, reflected.b) * material->reflectivity * reflectivityCoef), 1.0f);
+        (Vector3(reflected.r, reflected.g, reflected.b) * material->reflectivity * reflectivityCoef), 1.0f);
   }
   
   //sum results
-  return Color4f(ambient + specular + diffuse, 1.0f);
+  return Color4f(specular + diffuse, 1.0f);
 }
-
-//Color4f RecursivePhongShader::getPixel(const int x, const int y) {
-//  RTCRayHit ray = shootRay(x, y);
-//  return traceRay(ray, recursionDepth);
-//}

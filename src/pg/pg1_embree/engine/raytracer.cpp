@@ -1,17 +1,28 @@
 #include <stdafx.h>
-#include <engine/raytracer.h>
 #include <tutorials.h>
-#include <geometry/objloader.h>
+
+//Engine
+#include <engine/raytracer.h>
 #include <engine/light.h>
+#include <engine/sphericalmap.h>
+
+//geometry
+#include <geometry/objloader.h>
+
+//Shaders
 #include <shaders/phongshader.h>
 #include <shaders/normalsshader.h>
 #include <shaders/diffuseshader.h>
 #include <shaders/recursivephongshader.h>
+#include <shaders/glassshader.h>
+
+//Utils
 #include <utils/utils.h>
 
 Raytracer::Raytracer(const int width, const int height,
                      const float fov_y, const Vector3 view_from, const Vector3 view_at,
-                     const char *config) : SimpleGuiDX11(width, height) {
+                     const char *config) :
+    SimpleGuiDX11(width, height) {
   InitDeviceAndScene(config);
   
   camera_ = Camera(width, height, fov_y, view_from, view_at);
@@ -24,20 +35,60 @@ Raytracer::Raytracer(const int width, const int height,
   defaultBgColor_ = Color4f(1.0f, 0.0f, 1.0f, 1.0f);
   
   light_ = new Light(Vector3(200, 300, 400), Vector3(1.f));
-  activeShader_ = ShaderEnum::Phong;
-  shaders_[static_cast<int>(ShaderEnum::None)] = new Shader(&camera_, light_, &scene_, &surfaces_, &materials_);
-  shaders_[static_cast<int>(ShaderEnum::Diffuse)] = new DiffuseShader(&camera_, light_, &scene_, &surfaces_,
-                                                                      &materials_);
-  shaders_[static_cast<int>(ShaderEnum::Phong)] = new PhongShader(&camera_, light_, &scene_, &surfaces_, &materials_);
-  shaders_[static_cast<int>(ShaderEnum::Normals)] = new NormalsShader(&camera_, light_, &scene_, &surfaces_,
-                                                                      &materials_);
-  shaders_[static_cast<int>(ShaderEnum::RecursivePhong)] = new RecursivePhongShader(&camera_, light_, &scene_,
-                                                                                    &surfaces_,
-                                                                                    &materials_);
+  
+  sphericalMap_ = new SphericalMap("data/venice_sunset.jpg");
+//  sphericalMap_ = new SphericalMap("data/outdoor_umbrellas_4k.hdr");
+  
+  
+  activeShader_ = ShaderEnum::RecursivePhong;
+  
+  shaders_[static_cast<int>(ShaderEnum::None)] = new Shader(
+      &camera_,
+      light_,
+      &scene_,
+      &surfaces_,
+      &materials_);
+  
+  shaders_[static_cast<int>(ShaderEnum::Diffuse)] = new DiffuseShader(
+      &camera_,
+      light_,
+      &scene_,
+      &surfaces_,
+      &materials_);
+  
+  shaders_[static_cast<int>(ShaderEnum::Phong)] = new PhongShader(
+      &camera_,
+      light_,
+      &scene_,
+      &surfaces_,
+      &materials_);
+  
+  shaders_[static_cast<int>(ShaderEnum::Normals)] = new NormalsShader(
+      &camera_,
+      light_,
+      &scene_,
+      &surfaces_,
+      &materials_);
+  
+  shaders_[static_cast<int>(ShaderEnum::RecursivePhong)] = new RecursivePhongShader(
+      &camera_,
+      light_,
+      &scene_,
+      &surfaces_,
+      &materials_);
+  
+  shaders_[static_cast<int>(ShaderEnum::Glass)] = new GlassShader(
+      &camera_,
+      light_,
+      &scene_,
+      &surfaces_,
+      &materials_);
   
   for (auto shader : shaders_) {
     shader->setDefaultBgColor(&defaultBgColor_);
+    shader->setSphericalMap(sphericalMap_);
   }
+  
   
 }
 
@@ -133,7 +184,13 @@ Color4f Raytracer::get_pixel(const int x, const int y, const float t) {
 }
 
 int Raytracer::Ui() {
-  static const char *shaderNames[] = {"None", "Diffuse", "Phong", "Normals", "Recursive Phong"};
+  static const char *shaderNames[static_cast<int>(ShaderEnum::ShadersCount)] = {
+      "None",
+      "Diffuse",
+      "Phong",
+      "Normals",
+      "Recursive Phong",
+      "Glass"};
   
   // we use a Begin/End pair to created a named window
   ImGui::Begin("Ray Tracer Params", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
@@ -149,22 +206,25 @@ int Raytracer::Ui() {
   
   ImGui::Checkbox("Flip texture U", &Shader::flipTextureU_);
   ImGui::Checkbox("Flip texture V", &Shader::flipTextureV_);
+  ImGui::Checkbox("Sphere map", &Shader::sphereMap_);
   
   
   ImGui::Checkbox("Supersampling", &Shader::supersampling_);
-  if(Shader::supersampling_){
+  if (Shader::supersampling_) {
     ImGui::SliderInt("Samples", &Shader::samplingSize_, 1, 10);
   }
   switch (activeShader_) {
     
     case ShaderEnum::None: {
+      ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
       break;
     }
     case ShaderEnum::Diffuse: {
+      ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
       break;
     }
     case ShaderEnum::Phong: {
-      ImGui::Checkbox("Correct normals", &PhongShader::correctNormals_);
+      ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
       ImGui::Checkbox("Ambient", &PhongShader::phongAmbient_);
       ImGui::Checkbox("Diffuse", &PhongShader::phongDiffuse_);
       ImGui::Checkbox("Specular", &PhongShader::phongSpecular_);
@@ -177,14 +237,21 @@ int Raytracer::Ui() {
       break;
     }
     case ShaderEnum::Normals: {
-      ImGui::Checkbox("Correct normals", &NormalsShader::correctNormals_);
+      ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
       break;
     }
     case ShaderEnum::RecursivePhong: {
       ImGui::Separator();
-      
+      ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
       ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 0, 10);
       ImGui::SliderFloat("Reflectivity", &RecursivePhongShader::reflectivityCoef, 0, 1);
+      break;
+    }
+    case ShaderEnum::Glass: {
+      ImGui::Separator();
+      ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
+      ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 0, 10);
+      ImGui::SliderFloat("Reflectivity", &GlassShader::reflectivityCoef, 0, 1);
       break;
     }
     case ShaderEnum::ShadersCount: {
@@ -195,10 +262,11 @@ int Raytracer::Ui() {
   
   ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
               ImGui::GetIO().Framerate);
-  
-  ImGui::Separator();
-  ImGui::ColorPicker4("Background color", &defaultBgColor_.data[0]);
-  ImGui::Separator();
+  if (!Shader::sphereMap_) {
+    ImGui::Separator();
+    ImGui::ColorPicker4("Background color", &defaultBgColor_.data[0]);
+    ImGui::Separator();
+  }
   ImGui::End();
   
   return 0;

@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <cfloat>
+#include <cassert>
 #include <math/vector.h>
 
 template<class T>
@@ -25,6 +26,11 @@ inline Normal3f normalize(const Normal3f &n) {
 
 inline float deg2rad(const float x) {
   return x * float(M_PI) / 180.0f;
+}
+
+inline float clamp(const float v, const float lo, const float hi) {
+//  assert(!(hi < lo));
+  return (v < lo) ? lo : (hi < v) ? hi : v;
 }
 
 #endif

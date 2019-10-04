@@ -11,6 +11,7 @@ enum class ShaderEnum : int{
   Phong,
   Normals,
   RecursivePhong,
+  Glass,
   ShadersCount
 };
 

@@ -131,6 +131,10 @@ int LoadMTL(const char *file_name, const char *path, std::vector<Material *> &ma
         {
           sscanf(tmp, "%*s %f", &material->shininess);
         }
+        if (strstr(tmp, "ior") == tmp) // ior coefficient
+        {
+          sscanf(tmp, "%*s %f", &material->ior);
+        }
         if (strstr(tmp, "map_Kd") == tmp) // diffuse map
         {
           sscanf(tmp, "%*s %s", image_file_name);
