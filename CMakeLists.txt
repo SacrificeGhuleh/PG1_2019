@@ -19,10 +19,12 @@ SET(SRC_UTILS ${SRC_ROOT}/utils)
 
 SET(LIB_ROOT src/libs)
 SET(IMGUI_ROOT ${LIB_ROOT}/imgui)
+SET(GLM_ROOT ${LIB_ROOT}/glm)
 
 INCLUDE_DIRECTORIES(${SRC_ROOT})
 INCLUDE_DIRECTORIES(${IMGUI_ROOT})
 INCLUDE_DIRECTORIES(${IMGUI_ROOT}/examples)
+INCLUDE_DIRECTORIES(${GLM_ROOT})
 
 FIND_PACKAGE(Embree 3.6.1 REQUIRED)
 INCLUDE_DIRECTORIES(${EMBREE_INCLUDE_DIRS})
@@ -82,7 +84,9 @@ SET(ENGINE
     src/pg/pg1_embree/engine/simpleguidx11.cpp
     src/pg/pg1_embree/engine/simpleguidx11.h
     src/pg/pg1_embree/engine/light.cpp
-    src/pg/pg1_embree/engine/light.h src/pg/pg1_embree/engine/sphericalmap.cpp src/pg/pg1_embree/engine/sphericalmap.h)
+    src/pg/pg1_embree/engine/light.h
+    src/pg/pg1_embree/engine/sphericalmap.cpp
+    src/pg/pg1_embree/engine/sphericalmap.h)
 
 SET(GEOMETRY
     src/pg/pg1_embree/geometry/material.cpp
@@ -112,7 +116,15 @@ SET(SHADERS
     src/pg/pg1_embree/shaders/phongshader.h
     src/pg/pg1_embree/shaders/shader.cpp
     src/pg/pg1_embree/shaders/shader.h
-    src/pg/pg1_embree/shaders/shaderenum.h src/pg/pg1_embree/shaders/diffuseshader.cpp src/pg/pg1_embree/shaders/diffuseshader.h src/pg/pg1_embree/shaders/normalsshader.cpp src/pg/pg1_embree/shaders/normalsshader.h src/pg/pg1_embree/shaders/recursivephongshader.cpp src/pg/pg1_embree/shaders/recursivephongshader.h)
+    src/pg/pg1_embree/shaders/shaderenum.h
+    src/pg/pg1_embree/shaders/diffuseshader.cpp
+    src/pg/pg1_embree/shaders/diffuseshader.h
+    src/pg/pg1_embree/shaders/normalsshader.cpp
+    src/pg/pg1_embree/shaders/normalsshader.h
+    src/pg/pg1_embree/shaders/recursivephongshader.cpp
+    src/pg/pg1_embree/shaders/recursivephongshader.h
+    src/pg/pg1_embree/shaders/glassshader.cpp
+    src/pg/pg1_embree/shaders/glassshader.h)
 
 SET(UTILS
     src/pg/pg1_embree/utils/structs.cpp
@@ -126,7 +138,7 @@ SET(SRC
     src/pg/pg1_embree/targetver.h
     src/pg/pg1_embree/tutorials.cpp
     src/pg/pg1_embree/tutorials.h
-    src/pg/pg1_embree/stdafx.cpp src/pg/pg1_embree/shaders/glassshader.cpp src/pg/pg1_embree/shaders/glassshader.h)
+    src/pg/pg1_embree/stdafx.cpp )
 
 ADD_EXECUTABLE(${PROJECT_NAME} ${SRC} ${UTILS} ${SHADERS} ${MATH} ${GEOMETRY} ${ENGINE} ${IMGUI} ${PCH})
 
