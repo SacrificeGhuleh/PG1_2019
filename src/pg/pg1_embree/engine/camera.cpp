@@ -1,8 +1,9 @@
 #include <stdafx.h>
 #include <engine/camera.h>
+#include <glm/geometric.hpp>
 
 Camera::Camera(const int width, const int height, const float fov_y,
-               const Vector3& view_from, const Vector3 view_at) {
+               const Vector3 &view_from, const Vector3 view_at) {
   width_ = width;
   height_ = height;
   fov_y_ = fov_y;
@@ -12,24 +13,12 @@ Camera::Camera(const int width, const int height, const float fov_y,
   
   f_y_ = static_cast<float>(height_) / (2.f * tanf(fov_y_ / 2.f));
   
-  Vector3 z_c = view_from_ - view_at_;
-  z_c.Normalize();
-  Vector3 x_c = up_.CrossProduct(z_c);
-  x_c.Normalize();
-  Vector3 y_c = z_c.CrossProduct(x_c);
-  y_c.Normalize();
-  
-  M_c_w_ = Matrix3x3(x_c, y_c, z_c);
+  M_c_w_ = getMCW();
 }
 
-RTCRay Camera::GenerateRay(const float x_i, const float y_i) const {
+RTCRay Camera::GenerateRay(const float x_i, const float y_i) {
   RTCRay ray = RTCRay();
-  Vector3 dc = Vector3((static_cast<float>(x_i) - (static_cast<float>(width_) * 0.5f)),
-                       (static_cast<float>(height_) * 0.5f) - y_i,
-                       -f_y_);
-  
-  dc.Normalize();
-  Vector3 dc_w = M_c_w_ * dc;
+  Vector3 dc_w = getRayDirection(x_i, y_i);
   
   ray.org_x = view_from_.x; // ray origin
   ray.org_y = view_from_.y;
@@ -63,6 +52,8 @@ float Camera::getFovY() const {
 }
 
 const Vector3 &Camera::getViewFrom() const {
+  
+  
   return view_from_;
 }
 
@@ -78,6 +69,23 @@ float Camera::getFY() const {
   return f_y_;
 }
 
-const Matrix3x3 &Camera::getMCW() const {
+const Matrix3x3 &Camera::getMCW() {
+  Vector3 z_c = view_from_ - view_at_;
+  z_c = glm::normalize(z_c);
+  Vector3 x_c = glm::cross(up_, z_c);
+  x_c = glm::normalize(x_c);
+  Vector3 y_c = glm::cross(z_c, x_c);
+  y_c = glm::normalize(y_c);
+  
+  M_c_w_ = Matrix3x3(x_c, y_c, z_c);
+  
   return M_c_w_;
+}
+
+const Vector3 Camera::getRayDirection(const float x_i, const float y_i) {
+  Vector3 dc = Vector3((static_cast<float>(x_i) - (static_cast<float>(width_) * 0.5f)),
+                       (static_cast<float>(height_) * 0.5f) - y_i,
+                       -f_y_);
+  dc = glm::normalize(dc);
+  return getMCW() * dc;
 }

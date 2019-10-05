@@ -8,11 +8,16 @@
 #include <geometry/material.h>
 #include <engine/light.h>
 #include <engine/camera.h>
+#include <glm/geometric.hpp>
 
 float RecursivePhongShader::reflectivityCoef = 1.f;
 
-RecursivePhongShader::RecursivePhongShader(Camera *camera, Light *light, RTCScene *rtcscene,
-                                           std::vector<Surface *> *surfaces, std::vector<Material *> *materials)
+RecursivePhongShader::RecursivePhongShader(
+    Camera *camera,
+    Light *light,
+    RTCScene *rtcscene,
+    std::vector<Surface *> *surfaces,
+    std::vector<Material *> *materials)
     : Shader(camera, light, rtcscene, surfaces, materials) {}
 
 Color4f RecursivePhongShader::traceRay(const RTCRayHit &rayHit, int depth) {
@@ -38,13 +43,15 @@ Color4f RecursivePhongShader::traceRay(const RTCRayHit &rayHit, int depth) {
   Vector3 ambient = material->ambient;
   
   //diffuse
-  Vector3 origin(&rayHit.ray.org_x);
-  Vector3 direction(&rayHit.ray.dir_x);
+  Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y, rayHit.ray.org_z);
+  Vector3 direction(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
   Vector3 worldPos = origin + direction * rayHit.ray.tfar;
   Vector3 lightDir = light_->getPosition() - worldPos;
-  lightDir.Normalize();
-  normal.Normalize();
-  float diff = normal.DotProduct(lightDir);
+  
+  lightDir = glm::normalize(lightDir);
+  normal = glm::normalize(normal);
+  
+  float diff = glm::dot(normal, lightDir);
   
   //Flip normal if invalid
   if (correctNormals_) {
@@ -58,53 +65,17 @@ Color4f RecursivePhongShader::traceRay(const RTCRayHit &rayHit, int depth) {
   
   //specular
   Vector3 viewDir = (origin - worldPos);
-  viewDir.Normalize();
-  Vector3 reflectDir = normal.reflect(lightDir);
-  float spec = powf(viewDir.DotProduct(reflectDir), material->shininess);
+  viewDir = glm::normalize(viewDir);
+  Vector3 reflectDir = glm::reflect(normal, lightDir);
+  float spec = powf(glm::dot(viewDir, reflectDir), material->shininess);
   Vector3 specular(spec);
   
   if (depth > 0) {
-    
-    RTCRay reflectedRay;
-    
-    reflectedRay.org_x = worldPos.x;    // x coordinate of ray origin
-    reflectedRay.org_y = worldPos.y;    // y coordinate of ray origin
-    reflectedRay.org_z = worldPos.z;    // z coordinate of ray origin
-    
-    reflectedRay.tnear = 2.f;           // start of ray segment
-    
-    reflectedRay.dir_x = reflectDir.x;  // x coordinate of ray direction
-    reflectedRay.dir_y = reflectDir.y;  // y coordinate of ray direction
-    reflectedRay.dir_z = reflectDir.z;  // z coordinate of ray direction
-    
-    reflectedRay.time = 0;              // time of this ray for motion blur
-    reflectedRay.tfar = FLT_MAX;        // end of ray segment (set to hit distance)
-    reflectedRay.mask = 0;              // ray mask
-    reflectedRay.id = 0;                // ray ID
-    reflectedRay.flags = 0;             // ray flags
-    
-    
-    RTCHit reflectedHit;
-    reflectedHit.geomID = RTC_INVALID_GEOMETRY_ID;
-    reflectedHit.primID = RTC_INVALID_GEOMETRY_ID;
-    reflectedHit.Ng_x = 0.0f; // geometry normal
-    reflectedHit.Ng_y = 0.0f;
-    reflectedHit.Ng_z = 0.0f;
-    
-    // merge ray and hit structures
-    RTCRayHit reflectedRayHit;
-    reflectedRayHit.ray = reflectedRay;
-    reflectedRayHit.hit = reflectedHit;
-    
-    // intersect ray with the scene
-    RTCIntersectContext context;
-    rtcInitIntersectContext(&context);
-    rtcIntersect1(*rtcScene_, &context, &reflectedRayHit);
+    RTCRayHit reflectedRayHit = generateRay(worldPos, reflectDir, 2.f);
     Color4f reflected = traceRay(reflectedRayHit, depth - 1);
     return Color4f(
         (Vector3(reflected.r, reflected.g, reflected.b) * material->reflectivity * reflectivityCoef), 1.0f);
   }
   
-  //sum results
   return Color4f(specular + diffuse, 1.0f);
 }

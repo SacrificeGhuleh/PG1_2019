@@ -7,6 +7,7 @@
 #include <shaders/phongshader.h>
 #include <engine/light.h>
 #include <engine/camera.h>
+#include <glm/geometric.hpp>
 
 
 bool PhongShader::phongAmbient_ = true;
@@ -46,13 +47,16 @@ Color4f PhongShader::traceRay(const RTCRayHit &rayHit, int depth) {
     Vector3 ambient = material->ambient;
     
     //diffuse
-    Vector3 origin(&rayHit.ray.org_x);
-    Vector3 direction(&rayHit.ray.dir_x);
+    Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y,rayHit.ray.org_z);
+    Vector3 direction(rayHit.ray.dir_x,rayHit.ray.dir_y,rayHit.ray.dir_z);
     Vector3 worldPos = origin + direction * rayHit.ray.tfar;
     Vector3 lightDir = light_->getPosition() - worldPos;
-    lightDir.Normalize();
-    normal.Normalize();
-    float diff = normal.DotProduct(lightDir);
+    
+    lightDir = glm::normalize(lightDir);
+    normal = glm::normalize(normal);
+    
+    float diff = glm::dot(normal, lightDir);
+    
     if (correctNormals_) {
       //Flip normal if invalid
       if (diff < 0) {
@@ -64,9 +68,9 @@ Color4f PhongShader::traceRay(const RTCRayHit &rayHit, int depth) {
     
     //specular
     Vector3 viewDir = (origin - worldPos);
-    viewDir.Normalize();
-    Vector3 reflectDir = normal.reflect(lightDir);
-    float spec = powf(viewDir.DotProduct(reflectDir), material->shininess);
+    viewDir = glm::normalize(viewDir);
+    Vector3 reflectDir = glm::reflect(normal, lightDir);
+    float spec = powf(glm::dot(viewDir, reflectDir), material->shininess);
     Vector3 specular(specularStrength_ * spec);
     
     //sum results

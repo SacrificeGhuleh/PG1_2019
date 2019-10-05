@@ -37,6 +37,8 @@ public:
   Color3f getDiffuseColor(const Material *material, const Coord2f &tex_coord);
 
 protected:
+  RTCRayHit generateRay(const glm::vec3& origin, const glm::vec3& direction, const float tnear = 0.1f);
+  
   Color4f getBackgroundColor(const RTCRayHit &rayHit);
   
   Camera *camera_;
@@ -45,11 +47,10 @@ protected:
   std::vector<Surface *> *surfaces_;
   std::vector<Material *> *materials_;
   Color4f *defaultBgColor_;
-  SphericalMap* sphericalMap_;
+  SphericalMap *sphericalMap_;
 public:
   void setSphericalMap(SphericalMap *sphericalMap);
-
-public:
+  
   void setDefaultBgColor(Color4f *defaultBgColor);
   
   static bool flipTextureU_;

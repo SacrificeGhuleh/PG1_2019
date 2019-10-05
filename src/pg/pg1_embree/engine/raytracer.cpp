@@ -192,82 +192,92 @@ int Raytracer::Ui() {
       "Recursive Phong",
       "Glass"};
   
-  // we use a Begin/End pair to created a named window
+  ImGui::ShowDemoWindow(nullptr);
+  
   ImGui::Begin("Ray Tracer Params", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-  
-  ImGui::Text("Surfaces = %zu", surfaces_.size());
-  ImGui::Text("Materials = %zu", materials_.size());
-  ImGui::Separator();
-  ImGui::Checkbox("Vsync", &vsync_);
-  ImGui::Separator();
-  
-  ImGui::Combo("Selected Shader", reinterpret_cast<int *>(&activeShader_), shaderNames,
-               static_cast<int>(ShaderEnum::ShadersCount));
-  
-  ImGui::Checkbox("Flip texture U", &Shader::flipTextureU_);
-  ImGui::Checkbox("Flip texture V", &Shader::flipTextureV_);
-  ImGui::Checkbox("Sphere map", &Shader::sphereMap_);
-  
-  
-  ImGui::Checkbox("Supersampling", &Shader::supersampling_);
-  if (Shader::supersampling_) {
-    ImGui::SliderInt("Samples", &Shader::samplingSize_, 1, 10);
+  if (ImGui::CollapsingHeader("Engine")) {
+    ImGui::Text("Surfaces = %zu", surfaces_.size());
+    ImGui::Text("Materials = %zu", materials_.size());
+    ImGui::Separator();
+    ImGui::Checkbox("Vsync", &vsync_);
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
+                ImGui::GetIO().Framerate);
+//    ImGui::Separator();
   }
-  switch (activeShader_) {
+  
+  if (ImGui::CollapsingHeader("Shader")) {
     
-    case ShaderEnum::None: {
-      ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
-      break;
+    ImGui::Combo("Selected Shader", reinterpret_cast<int *>(&activeShader_), shaderNames,
+                 static_cast<int>(ShaderEnum::ShadersCount));
+    
+    ImGui::Checkbox("Flip texture U", &Shader::flipTextureU_);
+    ImGui::Checkbox("Flip texture V", &Shader::flipTextureV_);
+    ImGui::Checkbox("Sphere map", &Shader::sphereMap_);
+    
+    
+    ImGui::Checkbox("Supersampling", &Shader::supersampling_);
+    if (Shader::supersampling_) {
+      ImGui::SliderInt("Samples", &Shader::samplingSize_, 1, 10);
     }
-    case ShaderEnum::Diffuse: {
-      ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
-      break;
-    }
-    case ShaderEnum::Phong: {
-      ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
-      ImGui::Checkbox("Ambient", &PhongShader::phongAmbient_);
-      ImGui::Checkbox("Diffuse", &PhongShader::phongDiffuse_);
-      ImGui::Checkbox("Specular", &PhongShader::phongSpecular_);
+    switch (activeShader_) {
       
+      case ShaderEnum::None: {
+        ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
+        break;
+      }
+      case ShaderEnum::Diffuse: {
+        ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
+        break;
+      }
+      case ShaderEnum::Phong: {
+        ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
+        ImGui::Checkbox("Ambient", &PhongShader::phongAmbient_);
+        ImGui::Checkbox("Diffuse", &PhongShader::phongDiffuse_);
+        ImGui::Checkbox("Specular", &PhongShader::phongSpecular_);
+        
+        ImGui::Separator();
+        
+        ImGui::SliderFloat("Ambient Slider", &PhongShader::ambientValue_, 0.0f, 30.0f);
+        ImGui::SliderFloat("Specular strength Slider", &PhongShader::specularStrength_, 0.0f, 30.0f);
+        
+        break;
+      }
+      case ShaderEnum::Normals: {
+        ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
+        break;
+      }
+      case ShaderEnum::RecursivePhong: {
+        ImGui::Separator();
+        ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
+        ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 0, 10);
+        ImGui::SliderFloat("Reflectivity", &RecursivePhongShader::reflectivityCoef, 0, 1);
+        break;
+      }
+      case ShaderEnum::Glass: {
+        ImGui::Separator();
+        ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
+        ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 0, 10);
+        ImGui::SliderFloat("Reflectivity", &GlassShader::reflectivityCoef, 0, 1);
+        ImGui::SliderFloat("Blend", &GlassShader::rCoef, 0, 1);
+        break;
+      }
+      case ShaderEnum::ShadersCount: {
+        break;
+      }
+    }
+    if (!Shader::sphereMap_) {
       ImGui::Separator();
-      
-      ImGui::SliderFloat("Ambient Slider", &PhongShader::ambientValue_, 0.0f, 30.0f);
-      ImGui::SliderFloat("Specular strength Slider", &PhongShader::specularStrength_, 0.0f, 30.0f);
-      
-      break;
-    }
-    case ShaderEnum::Normals: {
-      ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
-      break;
-    }
-    case ShaderEnum::RecursivePhong: {
+      ImGui::ColorPicker4("Background color", &defaultBgColor_.x);
       ImGui::Separator();
-      ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
-      ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 0, 10);
-      ImGui::SliderFloat("Reflectivity", &RecursivePhongShader::reflectivityCoef, 0, 1);
-      break;
-    }
-    case ShaderEnum::Glass: {
-      ImGui::Separator();
-      ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
-      ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 0, 10);
-      ImGui::SliderFloat("Reflectivity", &GlassShader::reflectivityCoef, 0, 1);
-      break;
-    }
-    case ShaderEnum::ShadersCount: {
-      break;
     }
   }
-  ImGui::Separator();
   
-  ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
-              ImGui::GetIO().Framerate);
-  if (!Shader::sphereMap_) {
-    ImGui::Separator();
-    ImGui::ColorPicker4("Background color", &defaultBgColor_.data[0]);
-    ImGui::Separator();
+  if (ImGui::CollapsingHeader("Camera")) {
+    ImGui::Text("Camera position");
+    ImGui::SliderFloat("X", &camera_.view_from_.x, -100.0f, 100.0f);
+    ImGui::SliderFloat("Y", &camera_.view_from_.y, -100.0f, 100.0f);
+    ImGui::SliderFloat("Z", &camera_.view_from_.z, -100.0f, 100.0f);
   }
   ImGui::End();
-  
   return 0;
 }

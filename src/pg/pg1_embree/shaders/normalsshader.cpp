@@ -8,7 +8,7 @@
 #include <shaders/normalsshader.h>
 #include <engine/light.h>
 #include <engine/camera.h>
-
+#include <glm/geometric.hpp>
 
 
 NormalsShader::NormalsShader(Camera *camera, Light *light, RTCScene *rtcscene, std::vector<Surface *> *surfaces,
@@ -28,14 +28,15 @@ Color4f NormalsShader::traceRay(const RTCRayHit &rayHit, int depth) {
   rtcInterpolate0(geometry, rayHit.hit.primID, rayHit.hit.u, rayHit.hit.v,
                   RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 0, &normal.x, 3);
   
-  
-  Vector3 origin(&rayHit.ray.org_x);
-  Vector3 direction(&rayHit.ray.dir_x);
+  Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y, rayHit.ray.org_z);
+  Vector3 direction(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
   Vector3 worldPos = origin + direction * rayHit.ray.tfar;
   Vector3 lightDir = light_->getPosition() - worldPos;
-  lightDir.Normalize();
-  normal.Normalize();
-  float diff = normal.DotProduct(lightDir);
+  
+  lightDir = glm::normalize(lightDir);
+  normal = glm::normalize(normal);
+  
+  float diff = glm::dot(normal, lightDir);
   
   if (correctNormals_) {
     if (diff < 0) {

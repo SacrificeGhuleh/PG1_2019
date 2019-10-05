@@ -12,6 +12,7 @@
 #include <engine/sphericalmap.h>
 
 #include <geometry/material.h>
+#include <glm/geometric.hpp>
 
 bool Shader::flipTextureU_ = false;
 bool Shader::sphereMap_ = true;
@@ -27,26 +28,7 @@ Shader::Shader(Camera *camera, Light *light, RTCScene *rtcScene, std::vector<Sur
                                                      sphericalMap_{nullptr} {}
 
 RTCRayHit Shader::shootRay(const float x, const float y) {
-  RTCRay ray = camera_->GenerateRay(x, y);
-  
-  // setup a hit
-  RTCHit hit;
-  hit.geomID = RTC_INVALID_GEOMETRY_ID;
-  hit.primID = RTC_INVALID_GEOMETRY_ID;
-  hit.Ng_x = 0.0f; // geometry normal
-  hit.Ng_y = 0.0f;
-  hit.Ng_z = 0.0f;
-  
-  // merge ray and hit structures
-  RTCRayHit rayHit;
-  rayHit.ray = ray;
-  rayHit.hit = hit;
-  
-  // intersect ray with the scene
-  RTCIntersectContext context;
-  rtcInitIntersectContext(&context);
-  rtcIntersect1(*rtcScene_, &context, &rayHit);
-  
+  RTCRayHit rayHit = generateRay(camera_->getViewFrom(), camera_->getRayDirection(x, y), FLT_MIN);
   return rayHit;
 }
 
@@ -72,11 +54,11 @@ Color4f Shader::getPixel(const int x, const int y) {
     Color4f finalColor(0.f);
     float offsetX = -0.5f;
     float offsetY = -0.5f;
-    float offsetAddition = 1.0f / samplingSize_;
+    float offsetAddition = 1.0f / static_cast<float>(samplingSize_);
     
     for (int i = 0; i < samplingSize_; i++) {
       for (int j = 0; j < samplingSize_; j++) {
-        RTCRayHit ray = shootRay(x + offsetX, y + offsetY);
+        RTCRayHit ray = shootRay(static_cast<float>(x) + offsetX, static_cast<float>(y) + offsetY);
         finalColor += traceRay(ray, recursionDepth_);
         offsetX += offsetAddition;
       }
@@ -85,7 +67,7 @@ Color4f Shader::getPixel(const int x, const int y) {
     }
     return finalColor / (float) (samplingSize_ * samplingSize_);
   } else {
-    RTCRayHit ray = shootRay(x, y);
+    RTCRayHit ray = shootRay(static_cast<float>(x), static_cast<float>(y));
     return traceRay(ray, recursionDepth_);
   }
 }
@@ -109,9 +91,48 @@ void Shader::setSphericalMap(SphericalMap *sphericalMap) {
 Color4f Shader::getBackgroundColor(const RTCRayHit &rayHit) {
   if (sphericalMap_ != nullptr && sphereMap_) {
     Vector3 rayDir(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
-    rayDir.Normalize();
+    rayDir = glm::normalize(rayDir);
     return Color4f(sphericalMap_->texel(rayDir), 1.0f);
   }
   
   return *defaultBgColor_;
+}
+
+RTCRayHit Shader::generateRay(const glm::vec3 &origin, const glm::vec3 &direction, const float tnear) {
+  RTCRay ray;
+  
+  ray.org_x = origin.x;    // x coordinate of ray origin
+  ray.org_y = origin.y;    // y coordinate of ray origin
+  ray.org_z = origin.z;    // z coordinate of ray origin
+  
+  ray.tnear = 2.f;           // start of ray segment
+  
+  ray.dir_x = direction.x;  // x coordinate of ray direction
+  ray.dir_y = direction.y;  // y coordinate of ray direction
+  ray.dir_z = direction.z;  // z coordinate of ray direction
+  
+  ray.time = 0;              // time of this ray for motion blur
+  ray.tfar = FLT_MAX;        // end of ray segment (set to hit distance)
+  ray.mask = 0;              // ray mask
+  ray.id = 0;                // ray ID
+  ray.flags = 0;             // ray flags
+  
+  
+  RTCHit hit;
+  hit.geomID = RTC_INVALID_GEOMETRY_ID;
+  hit.primID = RTC_INVALID_GEOMETRY_ID;
+  hit.Ng_x = 0.0f; // geometry normal
+  hit.Ng_y = 0.0f;
+  hit.Ng_z = 0.0f;
+  
+  // merge ray and hit structures
+  RTCRayHit rayHit;
+  rayHit.ray = ray;
+  rayHit.hit = hit;
+  
+  // intersect ray with the scene
+  RTCIntersectContext context;
+  rtcInitIntersectContext(&context);
+  rtcIntersect1(*rtcScene_, &context, &rayHit);
+  return rayHit;
 }

@@ -7,6 +7,7 @@ http://en.wikipedia.org/wiki/Wavefront_.obj_file
 #include <geometry/material.h>
 #include <utils/utils.h>
 #include <geometry/surface.h>
+#include <glm/geometric.hpp>
 #include <math/mymath.h>
 
 bool MaterialExists(std::vector<Material *> &materials, char *material_name) {
@@ -294,7 +295,8 @@ int LoadOBJ(const char *file_name, std::vector<Surface *> &surfaces, std::vector
             } else {
               sscanf(line, "%*s %f %f %f", &normal.x, &normal.y, &normal.z);
             }
-            normal.Normalize();
+//            normal.Normalize();
+            normal = glm::normalize(normal);
             per_vertex_normals.push_back(normal);
           }
             break;

@@ -15,8 +15,10 @@ public:
               std::vector<Material *> *materials);
   
   virtual Color4f traceRay(const RTCRayHit &rayHit, int depth) override;
+  Color4f traceRay(const RTCRayHit &rayHit, int depth, bool switchIor);
   
   static float reflectivityCoef;
+  static float rCoef;
 };
 
 
