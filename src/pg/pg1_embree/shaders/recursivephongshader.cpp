@@ -11,6 +11,7 @@
 #include <glm/geometric.hpp>
 
 float RecursivePhongShader::reflectivityCoef = 1.f;
+static float tNear = 0.01f;
 
 RecursivePhongShader::RecursivePhongShader(
     Camera *camera,
@@ -70,12 +71,16 @@ Color4f RecursivePhongShader::traceRay(const RTCRayHit &rayHit, int depth) {
   float spec = powf(glm::dot(viewDir, reflectDir), material->shininess);
   Vector3 specular(spec);
   
-  if (depth > 0) {
-    RTCRayHit reflectedRayHit = generateRay(worldPos, reflectDir, 2.f);
-    Color4f reflected = traceRay(reflectedRayHit, depth - 1);
-    return Color4f(
-        (Vector3(reflected.r, reflected.g, reflected.b) * material->reflectivity * reflectivityCoef), 1.0f);
+  if (depth <= 0) {
+    return Color4f(specular + diffuse, 1.0f);
   }
   
-  return Color4f(specular + diffuse, 1.0f);
+  Color4f reflected(0.f, 0.f, 0.f, 0.f);
+  
+  RTCRayHit reflectedRayHit = generateRay(worldPos, reflectDir, tNear);
+  reflected = traceRay(reflectedRayHit, depth - 1);
+  
+  //Vector4 C(diffuse + (specular * Vector3(reflected)), 1.0f);
+  //return C;
+  return reflected;
 }

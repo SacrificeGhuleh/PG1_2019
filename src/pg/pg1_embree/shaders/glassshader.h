@@ -17,8 +17,6 @@ public:
   virtual Color4f traceRay(const RTCRayHit &rayHit, int depth) override;
   Color4f traceRay(const RTCRayHit &rayHit, int depth, bool switchIor);
   
-  static float reflectivityCoef;
-  static float rCoef;
 };
 
 

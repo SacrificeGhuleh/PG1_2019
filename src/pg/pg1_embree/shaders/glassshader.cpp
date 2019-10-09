@@ -12,8 +12,7 @@
 #include <glm/geometric.hpp>
 #include <math/mymath.h>
 
-float GlassShader::reflectivityCoef = 1.f;
-float GlassShader::rCoef = 0.046f;
+static float tNear = 0.01f;
 
 GlassShader::GlassShader(Camera *camera, Light *light, RTCScene *rtcscene, std::vector<Surface *> *surfaces,
                          std::vector<Material *> *materials) : Shader(camera, light, rtcscene, surfaces, materials) {}
@@ -68,56 +67,59 @@ Color4f GlassShader::traceRay(const RTCRayHit &rayHit, int depth, bool switchIor
   Vector3 reflectDir = glm::reflect(normal, lightDir);
   float spec = powf(glm::dot(viewDir, reflectDir), material->shininess);
   Vector3 specular(spec);
+  
   if (depth <= 0) {
-    return Color4f(ambient + specular + diffuse, 1.0f);
+    return Color4f(specular + diffuse, 1.0f);
   }
+  
   Color4f reflected(0.f, 0.f, 0.f, 0.f);
   Color4f refracted(0.f, 0.f, 0.f, 0.f);
-  float R = 0.f, T = 0.f;
-  {
-    RTCRayHit reflectedRayHit = generateRay(worldPos, reflectDir, 0.01f);
-    reflected = traceRay(reflectedRayHit, depth - 1);
-  }
   
-  {
-    Vector3 d(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
-    Vector3 n = normal;
-    
-    float n1;
-    float n2;
-    if (switchIor) {
-      n1 = 1;
-      n2 = material->ior;
-    } else {
-      n1 = material->ior;
-      n2 = 1.f;
-    }
-    
-    float cos_01 = glm::dot(-n, d);
-    if (cos_01 < 0) {
-      n = -n;
-      cos_01 = glm::dot(-n, d);
-    }
-    
-    float n1overn2 = (n1 / n2);
-    float cos_02 = sqrtf(1.f - (n1overn2 * n1overn2) * (1 - (cos_01 * cos_01)));
-    Vector3 l = n1overn2 * d + (n1overn2 * cos_01 - cos_02) * n;
-    Vector3 r = (2 * glm::dot(n, -d)) * n - (-d);
-    
-    RTCRayHit refractedRayHit = generateRay(
-        glm::vec3(worldPos.x, worldPos.y, worldPos.z),
-        glm::vec3(r.x, r.y, r.z),
-        0.01f);
-    
-    refracted = traceRay(refractedRayHit, depth - 1, !switchIor);
-    
-    float Rs = sqr<float>((n2 * cos_02 - n1 * cos_01) / (n2 * cos_02 + n1 * cos_01));
-    float Rp = sqr<float>((n2 * cos_01 - n1 * cos_02) / (n2 * cos_01 + n1 * cos_02));
-    R = (Rs + Rp) / 2.f;
-    T = 1.f - R;
-  }
+  RTCRayHit reflectedRayHit = generateRay(worldPos, reflectDir, tNear);
+  reflected = traceRay(reflectedRayHit, depth - 1, switchIor);
   
-  Vector4 C = (R * reflected * Vector4(diffuse, 1.f)) + (T * refracted * Vector4(diffuse, 1.f));
+  Vector3 d(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
+  Vector3 n = normal;
+  
+  float n1;
+  float n2;
+  if (!switchIor) {
+    n1 = 1;
+    n2 = material->ior;
+  } else {
+    n1 = material->ior;
+    n2 = 1.f;
+  }
+  switchIor = !switchIor;
+  
+  float cos_01 = glm::dot(-n, d);
+  if (cos_01 < 0) {
+    n = -n;
+    cos_01 = glm::dot(-n, d);
+  }
+  assert(cos_01 >= 0);
+  
+  float n1overn2 = (n1 / n2);
+  float cos_02 = sqrtf(1.f - (n1overn2 * n1overn2) * (1 - (cos_01 * cos_01)));
+  Vector3 l = n1overn2 * d + (n1overn2 * cos_01 - cos_02) * n;
+  Vector3 r = (2 * glm::dot(n, -d)) * n - (-d);
+  
+  RTCRayHit refractedRayHit = generateRay(
+      glm::vec3(worldPos.x, worldPos.y, worldPos.z),
+      glm::vec3(r.x, r.y, r.z),
+      tNear);
+  
+  refracted = traceRay(refractedRayHit, depth - 1, switchIor);
+  // Fresnel
+  float Rs = sqr((n1 * cos_02 - n2 * cos_01) / (n1 * cos_02 + n2 * cos_01));
+  float Rp = sqr((n1 * cos_01 - n2 * cos_02) / (n1 * cos_01 + n2 * cos_02));
+  float R = 0.5f * (Rs + Rp);
+  
+  // Calculate coefficients
+  float coefReflect = R;
+  float coefRefract = 1.0f - coefReflect;
+  
+  Vector4 C = (coefReflect * reflected * Vector4(diffuse, 1.f)) + (coefRefract * refracted * Vector4(diffuse, 1.f));
   return C;
 }
 

@@ -36,11 +36,11 @@ Raytracer::Raytracer(const int width, const int height,
   
   light_ = new Light(Vector3(200, 300, 400), Vector3(1.f));
   
-  sphericalMap_ = new SphericalMap("data/venice_sunset.jpg");
-//  sphericalMap_ = new SphericalMap("data/outdoor_umbrellas_4k.hdr");
+//  sphericalMap_ = new SphericalMap("data/venice_sunset.jpg");
+  sphericalMap_ = new SphericalMap("data/field.jpg");
   
   
-  activeShader_ = ShaderEnum::RecursivePhong;
+  activeShader_ = ShaderEnum::Glass;
   
   shaders_[static_cast<int>(ShaderEnum::None)] = new Shader(
       &camera_,
@@ -192,10 +192,10 @@ int Raytracer::Ui() {
       "Recursive Phong",
       "Glass"};
   
-  ImGui::ShowDemoWindow(nullptr);
+  //ImGui::ShowDemoWindow(nullptr);
   
   ImGui::Begin("Ray Tracer Params", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-  if (ImGui::CollapsingHeader("Engine")) {
+  if (ImGui::CollapsingHeader("Engine", true)) {
     ImGui::Text("Surfaces = %zu", surfaces_.size());
     ImGui::Text("Materials = %zu", materials_.size());
     ImGui::Separator();
@@ -205,7 +205,7 @@ int Raytracer::Ui() {
 //    ImGui::Separator();
   }
   
-  if (ImGui::CollapsingHeader("Shader")) {
+  if (ImGui::CollapsingHeader("Shader", true)) {
     
     ImGui::Combo("Selected Shader", reinterpret_cast<int *>(&activeShader_), shaderNames,
                  static_cast<int>(ShaderEnum::ShadersCount));
@@ -257,8 +257,6 @@ int Raytracer::Ui() {
         ImGui::Separator();
         ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
         ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 0, 10);
-        ImGui::SliderFloat("Reflectivity", &GlassShader::reflectivityCoef, 0, 1);
-        ImGui::SliderFloat("Blend", &GlassShader::rCoef, 0, 1);
         break;
       }
       case ShaderEnum::ShadersCount: {
@@ -272,7 +270,7 @@ int Raytracer::Ui() {
     }
   }
   
-  if (ImGui::CollapsingHeader("Camera")) {
+  if (ImGui::CollapsingHeader("Camera", true)) {
     ImGui::Text("Camera position");
     ImGui::SliderFloat("X", &camera_.view_from_.x, -100.0f, 100.0f);
     ImGui::SliderFloat("Y", &camera_.view_from_.y, -100.0f, 100.0f);

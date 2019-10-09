@@ -59,13 +59,13 @@ Texture::~Texture() {
 }
 
 Color3f Texture::get_texel(const float u, const float v) const {
-  //assert( ( u >= 0.0f && u <= 1.0f ) && ( v >= 0.0f && v <= 1.0f ) );
+//  assert( ( u >= 0.0f && u <= 1.0f ) && ( v >= 0.0f && v <= 1.0f ) );
   
   const int x = std::max(0, std::min(width_ - 1, int(u * width_)));
   const int y = std::max(0, std::min(height_ - 1, int(v * height_)));
   
   const int offset = y * scan_width_ + x * pixel_size_;
-  const float b = data_[offset] / 255.0f;
+  const float b = data_[offset + 0] / 255.0f;
   const float g = data_[offset + 1] / 255.0f;
   const float r = data_[offset + 2] / 255.0f;
   

@@ -14,7 +14,7 @@ int SimpleGuiDX11::Init() {
          GetModuleHandle(NULL), NULL, NULL, NULL, NULL, _T("ImGui Example"), NULL};
   RegisterClassEx(&wc_);
   hwnd_ = CreateWindow(_T("ImGui Example"), _T("PG1 Ray Tracer"),
-                       WS_OVERLAPPEDWINDOW, 100, 100, 1280, 800, NULL, NULL, wc_.hInstance, this);
+                       WS_OVERLAPPEDWINDOW, 0, 0, 1280, 720, NULL, NULL, wc_.hInstance, this);
   
   // Initialize Direct3D
   if (CreateDeviceD3D(hwnd_) < 0) {
@@ -30,8 +30,9 @@ int SimpleGuiDX11::Init() {
   // Setup Dear ImGui binding
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  //ImGuiIO & io = ImGui::GetIO(); ( void )io;
-  //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+  ImGuiIO & io = ImGui::GetIO(); ( void )io;
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;   // Enable Keyboard Controls
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;       // Enable Docking
   
   // Initialize helper Platform and Renderer bindings
   // (here we are using imgui_impl_win32 and imgui_impl_dx11)
@@ -148,6 +149,8 @@ int SimpleGuiDX11::MainLoop() {
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
+  
+    //ImGui::ShowExampleAppDockSpace();
     
     Ui();
     
