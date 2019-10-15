@@ -35,9 +35,10 @@ Raytracer::Raytracer(const int width, const int height,
   defaultBgColor_ = Color4f(1.0f, 0.0f, 1.0f, 1.0f);
   
   light_ = new Light(Vector3(200, 300, 400), Vector3(1.f));
-  
+
 //  sphericalMap_ = new SphericalMap("data/venice_sunset.jpg");
   sphericalMap_ = new SphericalMap("data/field.jpg");
+//  sphericalMap_ = new SphericalMap("data/outdoor_umbrellas_4k.hdr");
   
   
   activeShader_ = ShaderEnum::Glass;
@@ -192,20 +193,23 @@ int Raytracer::Ui() {
       "Recursive Phong",
       "Glass"};
   
-  //ImGui::ShowDemoWindow(nullptr);
   
   ImGui::Begin("Ray Tracer Params", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-  if (ImGui::CollapsingHeader("Engine", true)) {
+  ImGui::SetNextItemOpen(true);
+  if (ImGui::CollapsingHeader("Engine", 0)) {
     ImGui::Text("Surfaces = %zu", surfaces_.size());
     ImGui::Text("Materials = %zu", materials_.size());
     ImGui::Separator();
     ImGui::Checkbox("Vsync", &vsync_);
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
                 ImGui::GetIO().Framerate);
+    ImGui::Text("Raytracer time %.3f ms/frame (%.1f FPS)", SimpleGuiDX11::producerTime * 1000.f,
+                1000.f / (SimpleGuiDX11::producerTime * 1000.f));
 //    ImGui::Separator();
   }
   
-  if (ImGui::CollapsingHeader("Shader", true)) {
+  ImGui::SetNextItemOpen(true);
+  if (ImGui::CollapsingHeader("Shader", 0)) {
     
     ImGui::Combo("Selected Shader", reinterpret_cast<int *>(&activeShader_), shaderNames,
                  static_cast<int>(ShaderEnum::ShadersCount));
@@ -257,6 +261,17 @@ int Raytracer::Ui() {
         ImGui::Separator();
         ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
         ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 0, 10);
+        ImGui::Separator();
+        
+        ImGui::Checkbox("Add reflect", &GlassShader::addReflect_);
+        if (GlassShader::addReflect_) {
+          ImGui::Checkbox("Add diffuse to reflect", &GlassShader::addDiffuseToReflect_);
+        }
+        ImGui::Checkbox("Add refract", &GlassShader::addRefract_);
+        if (GlassShader::addRefract_) {
+          ImGui::Checkbox("Add diffuse to refract", &GlassShader::addDiffuseToRefract_);
+        }
+        
         break;
       }
       case ShaderEnum::ShadersCount: {
@@ -270,12 +285,19 @@ int Raytracer::Ui() {
     }
   }
   
+  ImGui::SetNextItemOpen(true);
   if (ImGui::CollapsingHeader("Camera", true)) {
     ImGui::Text("Camera position");
     ImGui::SliderFloat("X", &camera_.view_from_.x, -100.0f, 100.0f);
     ImGui::SliderFloat("Y", &camera_.view_from_.y, -100.0f, 100.0f);
     ImGui::SliderFloat("Z", &camera_.view_from_.z, -100.0f, 100.0f);
   }
+  
+  static bool show_demo = false;
+  ImGui::Separator();
+  if (ImGui::Checkbox("Show demo window", &show_demo))
+    ImGui::ShowDemoWindow(nullptr);
+  
   ImGui::End();
   return 0;
 }

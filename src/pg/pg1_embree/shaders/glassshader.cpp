@@ -14,6 +14,11 @@
 
 static float tNear = 0.01f;
 
+bool GlassShader::addReflect_ = true;
+bool GlassShader::addRefract_ = true;
+bool GlassShader::addDiffuseToReflect_ = false;
+bool GlassShader::addDiffuseToRefract_ = false;
+
 GlassShader::GlassShader(Camera *camera, Light *light, RTCScene *rtcscene, std::vector<Surface *> *surfaces,
                          std::vector<Material *> *materials) : Shader(camera, light, rtcscene, surfaces, materials) {}
 
@@ -105,8 +110,8 @@ Color4f GlassShader::traceRay(const RTCRayHit &rayHit, int depth, bool switchIor
   Vector3 r = (2 * glm::dot(n, -d)) * n - (-d);
   
   RTCRayHit refractedRayHit = generateRay(
-      glm::vec3(worldPos.x, worldPos.y, worldPos.z),
-      glm::vec3(r.x, r.y, r.z),
+      Vector3(worldPos.x, worldPos.y, worldPos.z),
+      Vector3(r.x, r.y, r.z),
       tNear);
   
   refracted = traceRay(refractedRayHit, depth - 1, switchIor);
@@ -118,8 +123,25 @@ Color4f GlassShader::traceRay(const RTCRayHit &rayHit, int depth, bool switchIor
   // Calculate coefficients
   float coefReflect = R;
   float coefRefract = 1.0f - coefReflect;
+
+//  Vector4 C = (coefReflect * reflected /** Vector4(diffuse, 1.f)*/) + (coefRefract * refracted /** Vector4(diffuse, 1.f)*/);
+  Vector4 C = {0.f, 0.f, 0.f, 1.f};
   
-  Vector4 C = (coefReflect * reflected * Vector4(diffuse, 1.f)) + (coefRefract * refracted * Vector4(diffuse, 1.f));
+  assert(coefReflect > 0.f);
+  assert(coefRefract > 0.f);
+  
+  if (addReflect_) {
+    C += coefReflect * reflected;
+    if (addDiffuseToReflect_) {
+      C *= Vector4(diffuse, 1.f);
+    }
+  }
+  if (addRefract_) {
+    C += coefRefract * refracted;
+    if (addDiffuseToRefract_) {
+      C *= Vector4(diffuse, 1.f);
+    }
+  }
   return C;
 }
 

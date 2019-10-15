@@ -17,6 +17,11 @@ public:
   virtual Color4f traceRay(const RTCRayHit &rayHit, int depth) override;
   Color4f traceRay(const RTCRayHit &rayHit, int depth, bool switchIor);
   
+  static bool addReflect_;
+  static bool addRefract_;
+  static bool addDiffuseToReflect_;
+  static bool addDiffuseToRefract_;
+  
 };
 
 

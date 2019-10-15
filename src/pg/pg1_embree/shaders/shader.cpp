@@ -65,7 +65,7 @@ Color4f Shader::getPixel(const int x, const int y) {
       offsetX = -0.5f;
       offsetY += offsetAddition;
     }
-    return finalColor / (float) (samplingSize_ * samplingSize_);
+    return finalColor / static_cast<float>(samplingSize_ * samplingSize_);
   } else {
     RTCRayHit ray = shootRay(static_cast<float>(x), static_cast<float>(y));
     return traceRay(ray, recursionDepth_);
@@ -101,21 +101,21 @@ Color4f Shader::getBackgroundColor(const RTCRayHit &rayHit) {
 RTCRayHit Shader::generateRay(const glm::vec3 &origin, const glm::vec3 &direction, const float tnear) {
   RTCRay ray;
   
-  ray.org_x = origin.x;    // x coordinate of ray origin
-  ray.org_y = origin.y;    // y coordinate of ray origin
-  ray.org_z = origin.z;    // z coordinate of ray origin
+  ray.org_x = origin.x;     // x coordinate of ray origin
+  ray.org_y = origin.y;     // y coordinate of ray origin
+  ray.org_z = origin.z;     // z coordinate of ray origin
   
-  ray.tnear = 2.f;           // start of ray segment
+  ray.tnear = tnear;        // start of ray segment
   
   ray.dir_x = direction.x;  // x coordinate of ray direction
   ray.dir_y = direction.y;  // y coordinate of ray direction
   ray.dir_z = direction.z;  // z coordinate of ray direction
   
-  ray.time = 0;              // time of this ray for motion blur
-  ray.tfar = FLT_MAX;        // end of ray segment (set to hit distance)
-  ray.mask = 0;              // ray mask
-  ray.id = 0;                // ray ID
-  ray.flags = 0;             // ray flags
+  ray.time = 0;             // time of this ray for motion blur
+  ray.tfar = FLT_MAX;       // end of ray segment (set to hit distance)
+  ray.mask = 0;             // ray mask
+  ray.id = 0;               // ray ID
+  ray.flags = 0;            // ray flags
   
   
   RTCHit hit;

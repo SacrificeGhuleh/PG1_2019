@@ -11,8 +11,10 @@ public:
   ~SimpleGuiDX11();
   
   int MainLoop();
-
+  
+  static float producerTime;
 protected:
+  
   int Init();
   
   int Cleanup();
@@ -42,16 +44,15 @@ protected:
   int height() const;
   
   bool vsync_{true};
-
 private:
   WNDCLASSEX wc_;
-  HWND hwnd_;
   
+  HWND hwnd_;
   ID3D11Device *g_pd3dDevice{nullptr};
   ID3D11DeviceContext *g_pd3dDeviceContext{nullptr};
   IDXGISwapChain *g_pSwapChain{nullptr};
-  ID3D11RenderTargetView *g_mainRenderTargetView{nullptr};
   
+  ID3D11RenderTargetView *g_mainRenderTargetView{nullptr};
   ID3D11Texture2D *tex_id_{nullptr};
   ID3D11ShaderResourceView *tex_view_{nullptr};
   int width_{640};

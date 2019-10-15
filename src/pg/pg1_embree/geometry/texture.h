@@ -20,15 +20,15 @@ public:
   
   Color3f get_texel(const float u, const float v) const;
   
-  int width() const;
+  unsigned int width() const;
   
-  int height() const;
+  unsigned int height() const;
 
 private:
-  int width_{0}; // image width (px)
-  int height_{0}; // image height (px)
-  int scan_width_{0}; // size of image row (bytes)
-  int pixel_size_{0}; // size of each pixel (bytes)
+  unsigned int width_{0}; // image width (px)
+  unsigned int height_{0}; // image height (px)
+  unsigned int scan_width_{0}; // size of image row (bytes)
+  unsigned int pixel_size_{0}; // size of each pixel (bytes)
   BYTE *data_{nullptr}; // image data in BGR format
 };
 

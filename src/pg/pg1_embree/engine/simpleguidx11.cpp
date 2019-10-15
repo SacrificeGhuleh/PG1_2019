@@ -1,6 +1,8 @@
 #include <stdafx.h>
 #include <engine/simpleguidx11.h>
 
+float SimpleGuiDX11::producerTime;
+
 SimpleGuiDX11::SimpleGuiDX11(const int width, const int height) {
   width_ = width;
   height_ = height;
@@ -30,7 +32,8 @@ int SimpleGuiDX11::Init() {
   // Setup Dear ImGui binding
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  ImGuiIO & io = ImGui::GetIO(); ( void )io;
+  ImGuiIO &io = ImGui::GetIO();
+  (void) io;
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;   // Enable Keyboard Controls
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;       // Enable Docking
   
@@ -88,12 +91,15 @@ void SimpleGuiDX11::Producer() {
   while (!finish_request_.load(std::memory_order_acquire)) {
     auto t1 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> dt = t1 - t0;
-    t += dt.count();
+    SimpleGuiDX11::producerTime = dt.count();
+//    t += dt.count();
+    t += producerTime;
     t0 = t1;
     
     // compute rendering
     //std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) );
-//#pragma omp parallel for
+    
+    #pragma omp parallel for num_threads(4)
     for (int y = 0; y < height_; ++y) {
       for (int x = 0; x < width_; ++x) {
         const Color4f pixel = get_pixel(x, y, t);
@@ -111,10 +117,12 @@ void SimpleGuiDX11::Producer() {
     {
       std::lock_guard<std::mutex> lock(tex_data_lock_);
       memcpy(tex_data_, local_data, width_ * height_ * 4 * sizeof(float));
+      
     } // lock release
   }
   
   delete[] local_data;
+  
 }
 
 int SimpleGuiDX11::width() const {
@@ -144,13 +152,63 @@ int SimpleGuiDX11::MainLoop() {
       DispatchMessage(&msg);
       continue;
     }
-    
     // Start the Dear ImGui frame
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
-  
+    
+    static bool p_open = true;
+    static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+    
+    
     //ImGui::ShowExampleAppDockSpace();
+    {
+      ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+      if (1/*opt_fullscreen*/) {
+        ImGuiViewport *viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->Pos);
+        ImGui::SetNextWindowSize(viewport->Size);
+        ImGui::SetNextWindowViewport(viewport->ID);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                        ImGuiWindowFlags_NoMove;
+        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+      }
+      
+      if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+        window_flags |= ImGuiWindowFlags_NoBackground;
+      
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+      ImGui::Begin("DockSpace Demo", &p_open, window_flags);
+      ImGui::PopStyleVar();
+      
+      if (1/*opt_fullscreen*/)
+        ImGui::PopStyleVar(2);
+      
+      ImGuiIO &io = ImGui::GetIO();
+      if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
+        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+      }
+      
+      if (ImGui::BeginMenuBar()) {
+        if (ImGui::BeginMenu("Scene")) {
+          // Disabling fullscreen would allow the window to be moved to the front of other windows,
+          // which we can't undo at the moment without finer window depth/z control.
+          //ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
+          
+          if (ImGui::MenuItem("Sphere", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))
+            dockspace_flags ^= ImGuiDockNodeFlags_NoSplit;
+          if (ImGui::MenuItem("Spaceship", "",
+                              (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))
+            dockspace_flags ^= ImGuiDockNodeFlags_NoResize;
+          ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+      }
+      ImGui::End();
+    }
     
     Ui();
     

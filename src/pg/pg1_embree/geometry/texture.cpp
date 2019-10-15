@@ -27,8 +27,8 @@ Texture::Texture(const char *file_name) {
       bits = FreeImage_GetBits(dib);
       //FreeImage_ConvertToRawBits()
       // get the image width and height
-      width_ = int(FreeImage_GetWidth(dib));
-      height_ = int(FreeImage_GetHeight(dib));
+      width_ = (FreeImage_GetWidth(dib));
+      height_ = (FreeImage_GetHeight(dib));
       
       // if each of these is ok
       if ((bits != 0) && (width_ != 0) && (height_ != 0)) {
@@ -37,8 +37,15 @@ Texture::Texture(const char *file_name) {
         pixel_size_ = FreeImage_GetBPP(dib) / 8; // in bytes
         
         data_ = new BYTE[scan_width_ * height_]; // BGR(A) format
-        FreeImage_ConvertToRawBits(data_, dib, scan_width_, pixel_size_ * 8, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK,
-                                   FI_RGBA_BLUE_MASK, TRUE);
+        FreeImage_ConvertToRawBits(
+            data_,
+            dib,
+            scan_width_,
+            pixel_size_ * 8U,
+            FI_RGBA_RED_MASK,
+            FI_RGBA_GREEN_MASK,
+            FI_RGBA_BLUE_MASK,
+            TRUE);
       }
       
       FreeImage_Unload(dib);
@@ -61,21 +68,21 @@ Texture::~Texture() {
 Color3f Texture::get_texel(const float u, const float v) const {
 //  assert( ( u >= 0.0f && u <= 1.0f ) && ( v >= 0.0f && v <= 1.0f ) );
   
-  const int x = std::max(0, std::min(width_ - 1, int(u * width_)));
-  const int y = std::max(0, std::min(height_ - 1, int(v * height_)));
+  const unsigned int x = std::max(0.f, std::min(static_cast<float>(width_) - 1.f, (u * static_cast<float>(width_))));
+  const unsigned int y = std::max(0.f, std::min(static_cast<float>(height_) - 1.f, (v * static_cast<float>(height_))));
   
-  const int offset = y * scan_width_ + x * pixel_size_;
-  const float b = data_[offset + 0] / 255.0f;
-  const float g = data_[offset + 1] / 255.0f;
-  const float r = data_[offset + 2] / 255.0f;
+  const unsigned int offset = y * scan_width_ + x * pixel_size_;
+  const float b = static_cast<float>(data_[offset + 0]) / 255.0f;
+  const float g = static_cast<float>(data_[offset + 1]) / 255.0f;
+  const float r = static_cast<float>(data_[offset + 2]) / 255.0f;
   
   return Color3f{r, g, b};
 }
 
-int Texture::width() const {
+unsigned int Texture::width() const {
   return width_;
 }
 
-int Texture::height() const {
+unsigned int Texture::height() const {
   return height_;
 }
