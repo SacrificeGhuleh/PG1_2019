@@ -21,7 +21,7 @@ PhongShader::PhongShader(Camera *camera, Light *light, RTCScene *rtcScene, std::
                          std::vector<Material *> *materials) : Shader(camera, light, rtcScene, surfaces, materials) {}
 
 
-Color4f PhongShader::traceRay(const RTCRayHit &rayHit, int depth) {
+Color4f PhongShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
   if(rayHit.hit.geomID == RTC_INVALID_GEOMETRY_ID){
     return getBackgroundColor(rayHit);
   }

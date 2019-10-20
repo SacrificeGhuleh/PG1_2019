@@ -14,8 +14,8 @@ public:
   GlassShader(Camera *camera, Light *light, RTCScene *rtcscene, std::vector<Surface *> *surfaces,
               std::vector<Material *> *materials);
   
-  virtual Color4f traceRay(const RTCRayHit &rayHit, int depth) override;
-  Color4f traceRay(const RTCRayHit &rayHit, int depth, bool switchIor);
+  virtual Color4f traceRay(const RtcRayHitIor &rayHit, int depth) override;
+  Color4f traceRay(const RtcRayHitIor &rayHit, int depth, bool switchIor);
   
   static bool addReflect_;
   static bool addRefract_;

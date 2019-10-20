@@ -13,6 +13,7 @@
 
 #include <geometry/material.h>
 #include <glm/geometric.hpp>
+#include <math/mymath.h>
 
 bool Shader::flipTextureU_ = false;
 bool Shader::sphereMap_ = true;
@@ -27,8 +28,8 @@ Shader::Shader(Camera *camera, Light *light, RTCScene *rtcScene, std::vector<Sur
                                                      surfaces_{surfaces}, materials_{materials},
                                                      sphericalMap_{nullptr} {}
 
-RTCRayHit Shader::shootRay(const float x, const float y) {
-  RTCRayHit rayHit = generateRay(camera_->getViewFrom(), camera_->getRayDirection(x, y), FLT_MIN);
+RtcRayHitIor Shader::shootRay(const float x, const float y) {
+  RtcRayHitIor rayHit = generateRay(camera_->getViewFrom(), camera_->getRayDirection(x, y), FLT_MIN);
   return rayHit;
 }
 
@@ -58,7 +59,7 @@ Color4f Shader::getPixel(const int x, const int y) {
     
     for (int i = 0; i < samplingSize_; i++) {
       for (int j = 0; j < samplingSize_; j++) {
-        RTCRayHit ray = shootRay(static_cast<float>(x) + offsetX, static_cast<float>(y) + offsetY);
+        RtcRayHitIor ray = shootRay(static_cast<float>(x) + offsetX, static_cast<float>(y) + offsetY);
         finalColor += traceRay(ray, recursionDepth_);
         offsetX += offsetAddition;
       }
@@ -67,7 +68,7 @@ Color4f Shader::getPixel(const int x, const int y) {
     }
     return finalColor / static_cast<float>(samplingSize_ * samplingSize_);
   } else {
-    RTCRayHit ray = shootRay(static_cast<float>(x), static_cast<float>(y));
+    RtcRayHitIor ray = shootRay(static_cast<float>(x), static_cast<float>(y));
     return traceRay(ray, recursionDepth_);
   }
 }
@@ -76,7 +77,7 @@ void Shader::setDefaultBgColor(Color4f *defaultBgColor) {
   defaultBgColor_ = defaultBgColor;
 }
 
-Color4f Shader::traceRay(const RTCRayHit &rayHit, int depth) {
+Color4f Shader::traceRay(const RtcRayHitIor &rayHit, int depth) {
   if (rayHit.hit.geomID == RTC_INVALID_GEOMETRY_ID) {
     return getBackgroundColor(rayHit);
   }
@@ -88,7 +89,7 @@ void Shader::setSphericalMap(SphericalMap *sphericalMap) {
   sphericalMap_ = sphericalMap;
 }
 
-Color4f Shader::getBackgroundColor(const RTCRayHit &rayHit) {
+Color4f Shader::getBackgroundColor(const RtcRayHitIor &rayHit) {
   if (sphericalMap_ != nullptr && sphereMap_) {
     Vector3 rayDir(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
     rayDir = glm::normalize(rayDir);
@@ -98,7 +99,7 @@ Color4f Shader::getBackgroundColor(const RTCRayHit &rayHit) {
   return *defaultBgColor_;
 }
 
-RTCRayHit Shader::generateRay(const glm::vec3 &origin, const glm::vec3 &direction, const float tnear) {
+RtcRayHitIor Shader::generateRay(const glm::vec3 &origin, const glm::vec3 &direction, const float tnear) {
   RTCRay ray;
   
   ray.org_x = origin.x;     // x coordinate of ray origin
@@ -126,7 +127,7 @@ RTCRayHit Shader::generateRay(const glm::vec3 &origin, const glm::vec3 &directio
   hit.Ng_z = 0.0f;
   
   // merge ray and hit structures
-  RTCRayHit rayHit;
+  RtcRayHitIor rayHit;
   rayHit.ray = ray;
   rayHit.hit = hit;
   
@@ -135,4 +136,13 @@ RTCRayHit Shader::generateRay(const glm::vec3 &origin, const glm::vec3 &directio
   rtcInitIntersectContext(&context);
   rtcIntersect1(*rtcScene_, &context, &rayHit);
   return rayHit;
+}
+
+
+float Shader::fresnel(const float n1, const float n2, const float Q1, const float Q2) {
+  float Rs = sqr((n1 * Q2 - n2 * Q1) / (n1 * Q2 + n2 * Q1));
+  float Rp = sqr((n1 * Q1 - n2 * Q2) / (n1 * Q1 + n2 * Q2));
+//  float R = 0.5f * (Rs + Rp);
+  
+  return 0.5f * (Rs + Rp);
 }

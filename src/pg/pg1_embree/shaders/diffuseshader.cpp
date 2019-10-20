@@ -15,7 +15,7 @@ DiffuseShader::DiffuseShader(Camera *camera, Light *light, RTCScene *rtcscene, s
                                                                           materials) {}
 
 
-Color4f DiffuseShader::traceRay(const RTCRayHit &rayHit, int depth) {
+Color4f DiffuseShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
   if (rayHit.hit.geomID == RTC_INVALID_GEOMETRY_ID) {
     return getBackgroundColor(rayHit);
   }

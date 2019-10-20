@@ -19,8 +19,8 @@ public:
   Color3f texel(const Vector3 &pos);
 
 private:
-//  std::unique_ptr<Texture> texture_;
-  Texture *texture_;
+  std::unique_ptr<Texture> texture_;
+  //Texture *texture_;
 };
 
 

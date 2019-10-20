@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(PG1_2019)
 #INCLUDE(cmake-precompiled-header/PrecompiledHeader.cmake)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes")
 
@@ -86,7 +86,7 @@ set(ENGINE
     src/pg/pg1_embree/engine/light.cpp
     src/pg/pg1_embree/engine/light.h
     src/pg/pg1_embree/engine/sphericalmap.cpp
-    src/pg/pg1_embree/engine/sphericalmap.h)
+    src/pg/pg1_embree/engine/sphericalmap.h src/pg/pg1_embree/engine/rtcrayhitior.h)
 
 set(GEOMETRY
     src/pg/pg1_embree/geometry/material.cpp

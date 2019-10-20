@@ -3,7 +3,8 @@
 #include <engine/raytracer.h>
 #include <utils/structs.h>
 #include <geometry/texture.h>
-#include <Math/mymath.h>
+#include <math/mymath.h>
+#include <engine/rtcrayhitior.h>
 
 /* error reporting function */
 void error_handler(void *user_ptr, const RTCError code, const char *str) {
@@ -130,7 +131,7 @@ int generate_and_trace_ray(RTCScene &scene) {
   hit.Ng_z = 0.0f;
   
   // merge ray and hit structures
-  RTCRayHit ray_hit;
+  RtcRayHitIor ray_hit;
   ray_hit.ray = ray;
   ray_hit.hit = hit;
   

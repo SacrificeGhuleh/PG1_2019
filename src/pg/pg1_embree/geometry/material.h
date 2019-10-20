@@ -12,17 +12,17 @@
 /*! \def IOR_AIR
 \brief Index lomu vzduchu za normálního tlaku.
 */
-#define IOR_AIR 1.000293f
+const float IOR_AIR = 1.000293f;
 
 /*! \def IOR_AIR
 \brief Index lomu vody.
 */
-#define IOR_WATER 1.33f
+const float IOR_WATER = 1.33f;
 
 /*! \def IOR_GLASS
 \brief Index lomu skla.
 */
-#define IOR_GLASS 1.5f
+const float IOR_GLASS = 1.5f;
 
 /*! \class Material
 \brief A simple material.

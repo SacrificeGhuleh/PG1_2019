@@ -13,7 +13,7 @@ int main() {
   _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
 
   return staticSceneSphere();
-  //return staticSceneShip();
+//  return staticSceneShip();
   
   //return tutorial_1();
   //return tutorial_2();
@@ -22,6 +22,7 @@ int main() {
   
   {
     glm::vec3 d(-0.429, -0.903, 0);
+    
     glm::vec3 n(0, 1, 0);
     
     float n1 = 1.5;

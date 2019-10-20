@@ -1,4 +1,6 @@
 #include <stdafx.h>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 using std::mt19937;
 using std::uniform_real_distribution;
@@ -156,4 +158,77 @@ char *RTrim(char *s) {
 
 char *Trim(char *s) {
   return RTrim(LTrim(s));
+}
+
+
+template<class T_TYPE>
+T_TYPE c_linear(T_TYPE c_srgb, float gamma = 2.4f) { return c_srgb; };
+
+template<class T_TYPE>
+T_TYPE c_srgb(T_TYPE c_linear, float gamma = 2.4f) { return c_linear; };
+
+template<>
+float c_linear<float>(float c_srgb, float gamma) {
+  if (c_srgb <= 0.0f)
+    return 0.0f;
+  else if (c_srgb >= 1.0f)
+    return 1.0f;
+//  assert((c_srgb >= 0.0f) && (c_srgb <= 1.0f));
+  if (c_srgb <= 0.04045f) {
+    return c_srgb / 12.92f;
+  } else {
+    const float a = 0.055f;
+    return powf((c_srgb + a) / (1.0f + a), gamma);
+  }
+};
+
+template<>
+float c_srgb<float>(float c_linear, float gamma) {
+  if (c_linear <= 0.0f)
+    return 0.0f;
+  else if (c_linear >= 1.0f)
+    return 1.0f;
+//  assert((c_linear >= 0.0f) && (c_linear <= 1.0f));
+  if (c_linear <= 0.0031308f) {
+    return 12.92f * c_linear;
+  } else {
+    const float a = 0.055f;
+    return (1.0f + a) * powf(c_linear, 1.0f / gamma) - a;
+  }
+}
+
+template<>
+glm::vec3 c_linear<glm::vec3>(glm::vec3 c_srgb, float gamma) {
+  c_srgb.r = c_linear(c_srgb.r, gamma);
+  c_srgb.g = c_linear(c_srgb.g, gamma);
+  c_srgb.b = c_linear(c_srgb.b, gamma);
+  return c_srgb;
+}
+
+template<>
+glm::vec3 c_srgb<glm::vec3>(glm::vec3 c_linear, float gamma) {
+  c_linear.r = c_srgb(c_linear.r, gamma);
+  c_linear.g = c_srgb(c_linear.g, gamma);
+  c_linear.b = c_srgb(c_linear.b, gamma);
+  return c_linear;
+}
+
+
+template<>
+glm::vec4 c_linear<glm::vec4>(glm::vec4 c_srgb, float gamma) {
+  c_srgb.r = c_linear(c_srgb.r, gamma);
+  c_srgb.g = c_linear(c_srgb.g, gamma);
+  c_srgb.b = c_linear(c_srgb.b, gamma);
+  c_srgb.a = c_linear(c_srgb.a, gamma);
+  return c_srgb;
+}
+
+template<>
+glm::vec4 c_srgb<glm::vec4>(glm::vec4 c_linear, float gamma) {
+  c_linear.r = c_srgb(c_linear.r, gamma);
+  c_linear.g = c_srgb(c_linear.g, gamma);
+  c_linear.b = c_srgb(c_linear.b, gamma);
+  c_linear.a = c_srgb(c_linear.a, gamma);
+  return c_linear;
+  
 }

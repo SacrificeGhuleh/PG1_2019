@@ -198,11 +198,13 @@ int SimpleGuiDX11::MainLoop() {
           // which we can't undo at the moment without finer window depth/z control.
           //ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
           
-          if (ImGui::MenuItem("Sphere", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))
-            dockspace_flags ^= ImGuiDockNodeFlags_NoSplit;
+          if (ImGui::MenuItem("Sphere", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0)){
+  
+          }
           if (ImGui::MenuItem("Spaceship", "",
-                              (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))
-            dockspace_flags ^= ImGuiDockNodeFlags_NoResize;
+                              (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0)){
+  
+          }
           ImGui::EndMenu();
         }
         ImGui::EndMenuBar();

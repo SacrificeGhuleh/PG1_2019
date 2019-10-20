@@ -110,6 +110,9 @@ int Raytracer::InitDeviceAndScene(const char *config) {
   // create a new scene bound to the specified device
   scene_ = rtcNewScene(device_);
   
+  //robust ray tracing
+  rtcSetSceneFlags(scene_, RTC_SCENE_FLAG_ROBUST);
+  
   return S_OK;
 }
 
@@ -181,6 +184,7 @@ void Raytracer::LoadScene(const std::string file_name) {
 }
 
 Color4f Raytracer::get_pixel(const int x, const int y, const float t) {
+  return c_srgb(shaders_[static_cast<int>(activeShader_)]->getPixel(x, y));
   return shaders_[static_cast<int>(activeShader_)]->getPixel(x, y);
 }
 

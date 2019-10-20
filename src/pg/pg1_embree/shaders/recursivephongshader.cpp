@@ -21,7 +21,7 @@ RecursivePhongShader::RecursivePhongShader(
     std::vector<Material *> *materials)
     : Shader(camera, light, rtcscene, surfaces, materials) {}
 
-Color4f RecursivePhongShader::traceRay(const RTCRayHit &rayHit, int depth) {
+Color4f RecursivePhongShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
   if (rayHit.hit.geomID == RTC_INVALID_GEOMETRY_ID) {
     return getBackgroundColor(rayHit);
   }
@@ -77,7 +77,7 @@ Color4f RecursivePhongShader::traceRay(const RTCRayHit &rayHit, int depth) {
   
   Color4f reflected(0.f, 0.f, 0.f, 0.f);
   
-  RTCRayHit reflectedRayHit = generateRay(worldPos, reflectDir, tNear);
+  RtcRayHitIor reflectedRayHit = generateRay(worldPos, reflectDir, tNear);
   reflected = traceRay(reflectedRayHit, depth - 1);
   
   //Vector4 C(diffuse + (specular * Vector3(reflected)), 1.0f);

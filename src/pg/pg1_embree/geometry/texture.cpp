@@ -1,5 +1,6 @@
 #include <stdafx.h>
 #include <geometry/texture.h>
+#include <utils/utils.h>
 
 Texture::Texture(const char *file_name) {
   // image format
@@ -76,6 +77,7 @@ Color3f Texture::get_texel(const float u, const float v) const {
   const float g = static_cast<float>(data_[offset + 1]) / 255.0f;
   const float r = static_cast<float>(data_[offset + 2]) / 255.0f;
   
+  return c_linear(Color3f{r, g, b});
   return Color3f{r, g, b};
 }
 

@@ -13,7 +13,7 @@ public:
   NormalsShader(Camera *camera, Light *light, RTCScene *rtcscene, std::vector<Surface *> *surfaces,
                 std::vector<Material *> *materials);
 
-  virtual Color4f traceRay(const RTCRayHit &rayHit, int depth = 0) override;
+  virtual Color4f traceRay(const RtcRayHitIor &rayHit, int depth = 0) override;
 };
 
 

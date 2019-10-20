@@ -5,8 +5,9 @@
 #ifndef PG1_2019_SHADER_H
 #define PG1_2019_SHADER_H
 
-#include <math/vector.h>
 #include <vector>
+#include <math/vector.h>
+#include <engine/rtcrayhitior.h>
 
 class Material;
 
@@ -30,16 +31,18 @@ public:
   
   virtual Color4f getPixel(const int x, const int y);
   
-  virtual Color4f traceRay(const RTCRayHit &rayHit, int depth = 0);
+  virtual Color4f traceRay(const RtcRayHitIor &rayHit, int depth = 0);
   
-  RTCRayHit shootRay(const float x, const float y);
+  RtcRayHitIor shootRay(const float x, const float y);
   
   Color3f getDiffuseColor(const Material *material, const Coord2f &tex_coord);
 
 protected:
-  RTCRayHit generateRay(const glm::vec3& origin, const glm::vec3& direction, const float tnear = 0.1f);
+  RtcRayHitIor generateRay(const glm::vec3 &origin, const glm::vec3 &direction, const float tnear = 0.1f);
   
-  Color4f getBackgroundColor(const RTCRayHit &rayHit);
+  Color4f getBackgroundColor(const RtcRayHitIor &rayHit);
+  
+  float fresnel(const float n1, const float n2, const float Q1, const float Q2);
   
   Camera *camera_;
   Light *light_;
