@@ -7,7 +7,6 @@
 
 
 #include <shaders/shader.h>
-#include <stdafx.h>
 
 class GlassShader : public Shader {
 public:
@@ -15,12 +14,12 @@ public:
               std::vector<Material *> *materials);
   
   virtual Color4f traceRay(const RtcRayHitIor &rayHit, int depth) override;
-  Color4f traceRay(const RtcRayHitIor &rayHit, int depth, bool switchIor);
   
   static bool addReflect_;
   static bool addRefract_;
   static bool addDiffuseToReflect_;
   static bool addDiffuseToRefract_;
+  static float ior_;
   
 };
 

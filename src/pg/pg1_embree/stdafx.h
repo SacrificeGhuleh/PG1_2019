@@ -4,9 +4,10 @@
 #include <targetver.h>
 
 #define _CRT_SECURE_NO_WARNINGS
-
+#define _USE_MATH_DEFINES
 // std libs
-#include <stdio.h>
+#include <cstdio>
+#include <cmath>
 #include <cstdlib>
 #include <string>
 #include <chrono>
@@ -18,6 +19,7 @@
 #include <map>
 #include <random>
 #include <functional>
+#include <iostream>
 
 #include <xmmintrin.h>
 #include <pmmintrin.h>

@@ -14,54 +14,46 @@
 #include <engine/light.h>
 #include <engine/camera.h>
 
-static float tNear = 0.01f;
-
 bool GlassShader::addReflect_ = true;
 bool GlassShader::addRefract_ = true;
 bool GlassShader::addDiffuseToReflect_ = false;
 bool GlassShader::addDiffuseToRefract_ = false;
+float GlassShader::ior_ = 1.5f;
 
 GlassShader::GlassShader(Camera *camera, Light *light, RTCScene *rtcscene, std::vector<Surface *> *surfaces,
                          std::vector<Material *> *materials) : Shader(camera, light, rtcscene, surfaces, materials) {}
 
-
-Color4f GlassShader::traceRay(const RtcRayHitIor &rayHit, int depth, bool switchIor) {
+Color4f GlassShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
   if (rayHit.hit.geomID == RTC_INVALID_GEOMETRY_ID) {
     return getBackgroundColor(rayHit);
   }
   
-  RTCGeometry geometry = rtcGetGeometry(*rtcScene_, rayHit.hit.geomID);
-  Normal3f normal;
+  const RTCGeometry geometry = rtcGetGeometry(*rtcScene_, rayHit.hit.geomID);
   // get interpolated normal
-  rtcInterpolate0(geometry, rayHit.hit.primID, rayHit.hit.u, rayHit.hit.v,
-                  RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 0, &normal.x, 3);
+  const Normal3f normal = glm::normalize(getNormal(geometry, rayHit));
   // and texture coordinates
-  Coord2f tex_coord;
-  rtcInterpolate0(geometry, rayHit.hit.primID, rayHit.hit.u, rayHit.hit.v,
-                  RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 1, &tex_coord.u, 2);
+  const Coord2f tex_coord = getTexCoords(geometry, rayHit);
   
-  /**
-   * Acquire material from hit object
-   */
-  Material *material = (Material *) (rtcGetGeometryUserData(geometry));
+  //Acquire material from hit object
+  Material *material = static_cast<Material *>(rtcGetGeometryUserData(geometry));
+  
   //ambient
   Vector3 ambient = material->ambient;
   
   //diffuse
-  Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y, rayHit.ray.org_z);
-  Vector3 direction(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
-  Vector3 worldPos = origin + direction * rayHit.ray.tfar;
-  Vector3 lightDir = light_->getPosition() - worldPos;
+  const Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y, rayHit.ray.org_z);
+  const Vector3 direction(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
+  const Vector3 worldPos = origin + direction * rayHit.ray.tfar;
+  const Vector3 lightDir = glm::normalize(light_->getPosition() - worldPos);
   
-  lightDir = glm::normalize(lightDir);
-  normal = glm::normalize(normal);
+  glm::vec3 normalForPhong = glm::normalize(normal);
   
-  float diff = glm::dot(normal, lightDir);
+  float diff = glm::dot(normalForPhong, lightDir);
   
   //Flip normal if invalid
   if (correctNormals_) {
     if (diff < 0) {
-      normal *= -1.f;
+      normalForPhong *= -1.f;
       diff *= -1.f;
     }
   }
@@ -71,27 +63,24 @@ Color4f GlassShader::traceRay(const RtcRayHitIor &rayHit, int depth, bool switch
   //specular
   Vector3 viewDir = (origin - worldPos);
   viewDir = glm::normalize(viewDir);
-  Vector3 reflectDir = glm::reflect(normal, lightDir);
-  float spec = powf(glm::dot(viewDir, reflectDir), material->shininess);
+  Vector3 phongReflectDir = glm::reflect(normalForPhong, lightDir);
+  float spec = powf(glm::dot(viewDir, phongReflectDir), material->shininess);
   Vector3 specular(spec);
   
   if (depth <= 0) {
-    return Color4f(specular + diffuse, 1.0f);
+    return getBackgroundColor(rayHit);
   }
   
-  Color4f reflected(0.f, 0.f, 0.f, 0.f);
-  Color4f refracted(0.f, 0.f, 0.f, 0.f);
-
-//  RtcRayHitIor reflectedRayHit = generateRay(worldPos, reflectDir, tNear);
-//  reflected = traceRay(reflectedRayHit, depth - 1);
-//
-  Vector3 rayDirection(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
-  Vector3 norm = normal;
+  Color4f reflected(0.f, 0.f, 0.f, 1.f);
+  Color4f refracted(0.f, 0.f, 0.f, 1.f);
+  
+  glm::vec3 normalForGlass = glm::normalize(normal);
+  const glm::vec3 rayDirection(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
+  const glm::vec3 rayToObserver = -rayDirection;
+  
   //n1 = ray ior
   //n2 = material ior
   //if n1 != vzduch than n2 = air
-  
-  
   float n1 = rayHit.ior;
   float n2 = material->ior;
   
@@ -99,50 +88,48 @@ Color4f GlassShader::traceRay(const RtcRayHitIor &rayHit, int depth, bool switch
     n2 = IOR_AIR;
   }
   
-  if (n2 < 0) {
-    n2 = IOR_AIR;
-  }
+//  if(n1 < 0 || n2 < 0){
+//    n1 = n2 = 1.f;
+//  }
   
-  float n1overn2 = (n1 / n2);
+  assert(n1 >= 0);
+  assert(n2 >= 0);
   
-  //cos1
-  float Q1 = glm::dot(-norm, rayDirection);
+  const float n1overn2 = (n1 / n2);
+//cos1
+  float Q1 = glm::dot(normalForGlass, rayToObserver);
+  
   if (Q1 < 0) {
-    norm = -norm;
-    Q1 = glm::dot(-norm, rayDirection);
+    normalForGlass = -normalForGlass;
+    Q1 = glm::dot(normalForGlass, rayToObserver);
   }
   assert(Q1 >= 0);
   
-  //cos2
-  float Q2 = sqrtf(1.f - sqr(n1overn2) * (1 - sqr(Q1)));
+  const glm::vec3 reflectDir = glm::normalize(
+      (2.f * (rayToObserver * normalForGlass)) * normalForGlass - rayToObserver);
   
-  Vector3 l = n1overn2 * rayDirection + (n1overn2 * Q1 - Q2) * norm;
-  Vector3 refractedDir = (2 * glm::dot(norm, -rayDirection)) * norm - (-rayDirection);
+  RtcRayHitIor reflectedRayHit = generateRay(worldPos, reflectDir, tNear_);
+  reflectedRayHit.ior = n2;
+  
+  const float tmp = 1.f - sqr(n1overn2) * (1.f - sqr(Q1));
+  if (tmp < 0.f) {
+    glm::vec4 C = traceRay(reflectedRayHit, depth - 1);
+    return C;
+  }
 
-//Vector3 refractedDir = (-n1overn2 * rayDirection - (n1overn2 * Q1 + Q2) * norm);
-  refractedDir = glm::normalize(refractedDir);
+//cos2
+  const float Q2 = sqrtf(tmp);
+  const glm::vec3 refractedDir = glm::normalize((n1overn2 * rayDirection) + ((n1overn2 * Q1 - Q2) * normalForGlass));
+// Fresnel
+  const float R = Shader::fresnel(n1, n2, Q1, Q2);
+  const float coefReflect = R;
+  const float coefRefract = 1.f - R;
   
-  RtcRayHitIor refractedRayHit = generateRay(
-      Vector3(worldPos.x, worldPos.y, worldPos.z),
-      Vector3(refractedDir.x, refractedDir.y, refractedDir.z),
-      tNear);
+  RtcRayHitIor refractedRayHit = generateRay(worldPos, refractedDir, tNear_);
   refractedRayHit.ior = n2;
   
-  refracted = traceRay(refractedRayHit, depth - 1);
-  
-  reflectDir = __max((2.0f * glm::dot(normal, -rayDirection)), 0.0f) * normal + rayDirection;
-  reflectDir = glm::normalize(reflectDir);
-  
-  RtcRayHitIor reflectedRayHit = generateRay(worldPos, reflectDir, tNear);
-  reflectedRayHit.ior = n1;
   reflected = traceRay(reflectedRayHit, depth - 1);
-  
-  // Fresnel
-  float R = fresnel(n1, n2, Q2, Q1);
-  
-  float coefReflect = R;
-  float coefRefract = 1.f - R;
-
+  refracted = traceRay(refractedRayHit, depth - 1);
 
 //  Vector4 C = (coefReflect * reflected /** Vector4(diffuse, 1.f)*/) + (coefRefract * refracted /** Vector4(diffuse, 1.f)*/);
   
@@ -151,6 +138,9 @@ Color4f GlassShader::traceRay(const RtcRayHitIor &rayHit, int depth, bool switch
   
   assert(coefRefract >= 0.f);
   assert(coefRefract <= 1.f);
+  
+  //coefReflect = clamp(coefReflect, 0.f, 1.f);
+  //coefRefract = clamp(coefRefract, 0.f, 1.f);
 //
   Vector4 C = {0.f, 0.f, 0.f, 1.f};
   
@@ -171,9 +161,6 @@ Color4f GlassShader::traceRay(const RtcRayHitIor &rayHit, int depth, bool switch
       C *= Vector4(diffuse, 1.f);
     }
   }
+  
   return C;
-}
-
-Color4f GlassShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
-  return traceRay(rayHit, depth, false);
 }

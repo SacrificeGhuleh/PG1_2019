@@ -306,7 +306,7 @@ int LoadOBJ(const char *file_name, std::vector<Surface *> &surfaces, std::vector
             Coord2f texture_coord;
             float z = 0;
             sscanf(line, "%*s %f %f %f",
-                   &texture_coord.u, &texture_coord.v, &z);
+                   &texture_coord.x, &texture_coord.y, &z);
             texture_coords.push_back(texture_coord);
           }
             break;

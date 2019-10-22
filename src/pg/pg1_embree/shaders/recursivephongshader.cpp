@@ -26,20 +26,14 @@ Color4f RecursivePhongShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
     return getBackgroundColor(rayHit);
   }
   
-  RTCGeometry geometry = rtcGetGeometry(*rtcScene_, rayHit.hit.geomID);
-  Normal3f normal;
+  const RTCGeometry geometry = rtcGetGeometry(*rtcScene_, rayHit.hit.geomID);
   // get interpolated normal
-  rtcInterpolate0(geometry, rayHit.hit.primID, rayHit.hit.u, rayHit.hit.v,
-                  RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 0, &normal.x, 3);
+  Normal3f normal = glm::normalize(getNormal(geometry, rayHit));
   // and texture coordinates
-  Coord2f tex_coord;
-  rtcInterpolate0(geometry, rayHit.hit.primID, rayHit.hit.u, rayHit.hit.v,
-                  RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 1, &tex_coord.u, 2);
+  const Coord2f tex_coord = getTexCoords(geometry, rayHit);
   
-  /**
-   * Acquire material from hit object
-   */
-  Material *material = (Material *) (rtcGetGeometryUserData(geometry));
+  //Acquire material from hit object
+  Material *material = static_cast<Material*>(rtcGetGeometryUserData(geometry));
   //ambient
   Vector3 ambient = material->ambient;
   
@@ -50,7 +44,6 @@ Color4f RecursivePhongShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
   Vector3 lightDir = light_->getPosition() - worldPos;
   
   lightDir = glm::normalize(lightDir);
-  normal = glm::normalize(normal);
   
   float diff = glm::dot(normal, lightDir);
   
@@ -75,7 +68,7 @@ Color4f RecursivePhongShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
     return Color4f(specular + diffuse, 1.0f);
   }
   
-  Color4f reflected(0.f, 0.f, 0.f, 0.f);
+  Color4f reflected(0.f, 0.f, 0.f, 1.f);
   
   RtcRayHitIor reflectedRayHit = generateRay(worldPos, reflectDir, tNear);
   reflected = traceRay(reflectedRayHit, depth - 1);

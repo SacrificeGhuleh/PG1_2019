@@ -84,12 +84,12 @@ unsigned int add_triangle(const RTCDevice device, RTCScene scene) {
   // set texture coordinates
   Coord2f *tex_coords = (Coord2f *) rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 1,
                                                             RTC_FORMAT_FLOAT2, sizeof(Coord2f), 3);
-  tex_coords[0].u = 0;
-  tex_coords[0].v = 1;
-  tex_coords[1].u = 1;
-  tex_coords[1].v = 1;
-  tex_coords[2].u = 0;
-  tex_coords[2].v = 0;
+  tex_coords[0].x = 0;
+  tex_coords[0].y = 1;
+  tex_coords[1].x = 1;
+  tex_coords[1].y = 1;
+  tex_coords[2].x = 0;
+  tex_coords[2].y = 0;
   
   // changes to the geometry must be always committed
   rtcCommitGeometry(mesh);
@@ -150,10 +150,10 @@ int generate_and_trace_ray(RTCScene &scene) {
     // and texture coordinates
     Coord2f tex_coord;
     rtcInterpolate0(geometry, ray_hit.hit.primID, ray_hit.hit.u, ray_hit.hit.v,
-                    RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 1, &tex_coord.u, 2);
+                    RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 1, &tex_coord.x, 2);
     
     printf("normal = (%0.3f, %0.3f, %0.3f)\n", normal.x, normal.y, normal.z);
-    printf("tex_coord = (%0.3f, %0.3f)\n", tex_coord.u, tex_coord.v);
+    printf("tex_coord = (%0.3f, %0.3f)\n", tex_coord.x, tex_coord.y);
   }
   
   return EXIT_SUCCESS;

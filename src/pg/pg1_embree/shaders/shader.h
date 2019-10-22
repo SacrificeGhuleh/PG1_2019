@@ -36,13 +36,19 @@ public:
   RtcRayHitIor shootRay(const float x, const float y);
   
   Color3f getDiffuseColor(const Material *material, const Coord2f &tex_coord);
+  
+  static float fresnel(const float n1, const float n2, const float Q1, const float Q2); /*{
+    float Rs = ((n1 * Q2 - n2 * Q1) / (n1 * Q2 + n2 * Q1)) * ((n1 * Q2 - n2 * Q1) / (n1 * Q2 + n2 * Q1));
+    float Rp = ((n1 * Q1 - n2 * Q2) / (n1 * Q1 + n2 * Q2)) * ((n1 * Q1 - n2 * Q2) / (n1 * Q1 + n2 * Q2));
+    
+    return 0.5f * (Rs + Rp);
+  }*/
 
 protected:
-  RtcRayHitIor generateRay(const glm::vec3 &origin, const glm::vec3 &direction, const float tnear = 0.1f);
+  
+  RtcRayHitIor generateRay(const glm::vec3 &origin, const glm::vec3 &direction, const float tnear = tNear_);
   
   Color4f getBackgroundColor(const RtcRayHitIor &rayHit);
-  
-  float fresnel(const float n1, const float n2, const float Q1, const float Q2);
   
   Camera *camera_;
   Light *light_;
@@ -51,6 +57,11 @@ protected:
   std::vector<Material *> *materials_;
   Color4f *defaultBgColor_;
   SphericalMap *sphericalMap_;
+  
+  static glm::vec3 getNormal(RTCGeometry geometry, const RtcRayHitIor &rayHit);
+  
+  static glm::vec2 getTexCoords(RTCGeometry geometry, const RtcRayHitIor &rayHit);
+
 public:
   void setSphericalMap(SphericalMap *sphericalMap);
   
@@ -63,6 +74,9 @@ public:
   static bool correctNormals_;
   static int samplingSize_;
   static int recursionDepth_;
+  static float tNear_;
+  static int visualizeX_;
+  static int visualizeY_;
   
 };
 

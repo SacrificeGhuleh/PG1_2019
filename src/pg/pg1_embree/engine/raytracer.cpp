@@ -166,8 +166,8 @@ void Raytracer::LoadScene(const std::string file_name) {
         normals[k].y = vertex.normal.y;
         normals[k].z = vertex.normal.z;
         
-        tex_coords[k].u = vertex.texture_coords[0].u;
-        tex_coords[k].v = vertex.texture_coords[0].v;
+        tex_coords[k].x = vertex.texture_coords[0].x;
+        tex_coords[k].y = vertex.texture_coords[0].y;
       } // end of vertices loop
       
       triangles[i].v0 = k - 3;
@@ -185,7 +185,6 @@ void Raytracer::LoadScene(const std::string file_name) {
 
 Color4f Raytracer::get_pixel(const int x, const int y, const float t) {
   return c_srgb(shaders_[static_cast<int>(activeShader_)]->getPixel(x, y));
-  return shaders_[static_cast<int>(activeShader_)]->getPixel(x, y);
 }
 
 int Raytracer::Ui() {
@@ -222,8 +221,12 @@ int Raytracer::Ui() {
     ImGui::Checkbox("Flip texture V", &Shader::flipTextureV_);
     ImGui::Checkbox("Sphere map", &Shader::sphereMap_);
     
-    
     ImGui::Checkbox("Supersampling", &Shader::supersampling_);
+    
+    ImGui::SliderFloat("Ray near", &Shader::tNear_, 0, 0.5f);
+    
+    ImGui::SliderInt("Visualize X", &Shader::visualizeX_, 0, 640);
+    ImGui::SliderInt("Visualize Y", &Shader::visualizeY_, 0, 480);
     if (Shader::supersampling_) {
       ImGui::SliderInt("Samples", &Shader::samplingSize_, 1, 10);
     }
@@ -265,6 +268,7 @@ int Raytracer::Ui() {
         ImGui::Separator();
         ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
         ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 0, 10);
+        ImGui::SliderFloat("Ior", &GlassShader::ior_, 0.01f, 2.f);
         ImGui::Separator();
         
         ImGui::Checkbox("Add reflect", &GlassShader::addReflect_);

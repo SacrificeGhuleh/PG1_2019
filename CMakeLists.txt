@@ -140,7 +140,10 @@ set(SRC
     src/pg/pg1_embree/tutorials.h
     src/pg/pg1_embree/stdafx.cpp)
 
-add_executable(${PROJECT_NAME} ${SRC} ${UTILS} ${SHADERS} ${MATH} ${GEOMETRY} ${ENGINE} ${IMGUI} ${PCH})
+set (TESTS
+     src/pg/pg1_embree/tests/test.h)
+
+add_executable(${PROJECT_NAME} ${SRC} ${UTILS} ${SHADERS} ${MATH} ${GEOMETRY} ${ENGINE} ${TESTS} ${IMGUI} ${PCH})
 
 
 find_package(OpenMP REQUIRED)

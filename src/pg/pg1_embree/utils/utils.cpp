@@ -173,7 +173,7 @@ float c_linear<float>(float c_srgb, float gamma) {
     return 0.0f;
   else if (c_srgb >= 1.0f)
     return 1.0f;
-//  assert((c_srgb >= 0.0f) && (c_srgb <= 1.0f));
+  assert((c_srgb >= 0.0f) && (c_srgb <= 1.0f));
   if (c_srgb <= 0.04045f) {
     return c_srgb / 12.92f;
   } else {
@@ -188,7 +188,7 @@ float c_srgb<float>(float c_linear, float gamma) {
     return 0.0f;
   else if (c_linear >= 1.0f)
     return 1.0f;
-//  assert((c_linear >= 0.0f) && (c_linear <= 1.0f));
+  assert((c_linear >= 0.0f) && (c_linear <= 1.0f));
   if (c_linear <= 0.0031308f) {
     return 12.92f * c_linear;
   } else {
@@ -230,5 +230,4 @@ glm::vec4 c_srgb<glm::vec4>(glm::vec4 c_linear, float gamma) {
   c_linear.b = c_srgb(c_linear.b, gamma);
   c_linear.a = c_srgb(c_linear.a, gamma);
   return c_linear;
-  
 }

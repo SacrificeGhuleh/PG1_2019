@@ -10,6 +10,7 @@
 
 struct RtcRayHitIor : RTCRayHit {
   float ior = IOR_AIR;
+  bool visualize = false;
 };
 
 #endif //PG1_2019_RtcRayHitIorIOR_H
