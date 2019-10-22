@@ -5,7 +5,6 @@
 #ifndef PG1_2019_PHONGSHADER_H
 #define PG1_2019_PHONGSHADER_H
 
-
 #include <shaders/shader.h>
 
 class PhongShader : public Shader {

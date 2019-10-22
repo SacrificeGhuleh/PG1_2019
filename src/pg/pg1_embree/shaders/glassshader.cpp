@@ -18,6 +18,8 @@ bool GlassShader::addReflect_ = true;
 bool GlassShader::addRefract_ = true;
 bool GlassShader::addDiffuseToReflect_ = false;
 bool GlassShader::addDiffuseToRefract_ = false;
+bool GlassShader::addAttenuation = false;
+float GlassShader::attenuation_ = 0.f;
 float GlassShader::ior_ = 1.5f;
 
 GlassShader::GlassShader(Camera *camera, Light *light, RTCScene *rtcscene, std::vector<Surface *> *surfaces,
@@ -82,19 +84,20 @@ Color4f GlassShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
   //n2 = material ior
   //if n1 != vzduch than n2 = air
   float n1 = rayHit.ior;
-  float n2 = material->ior;
+//  float n2 = material->ior;
+  float n2 = ior_;
   
   if (n1 != IOR_AIR) {
     n2 = IOR_AIR;
   }
-  
+
 //  if(n1 < 0 || n2 < 0){
 //    n1 = n2 = 1.f;
 //  }
   
   assert(n1 >= 0);
   assert(n2 >= 0);
-  
+  //0.64 1.54
   const float n1overn2 = (n1 / n2);
 //cos1
   float Q1 = glm::dot(normalForGlass, rayToObserver);
@@ -138,15 +141,26 @@ Color4f GlassShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
   
   assert(coefRefract >= 0.f);
   assert(coefRefract <= 1.f);
-  
-  //coefReflect = clamp(coefReflect, 0.f, 1.f);
-  //coefRefract = clamp(coefRefract, 0.f, 1.f);
+
 //
   Vector4 C = {0.f, 0.f, 0.f, 1.f};
   
   //C = [Crefl*R + Crefr*(1-R)] * TbeerLambert
   //TbeerLambert = {1,1,1} for air
   //TbeerLambert = {e^-Mr*l,e^-Mg*l,e^-Mb*l} for air, l = delka paprsku, M = absorpce materialu
+  glm::vec3 TBeerLambert;
+  if (rayHit.ior == IOR_AIR) {
+    TBeerLambert = {1.f, 1.f, 1.f};
+  } else {
+    const float l = rayHit.ray.tfar;
+    const glm::vec3 M = {attenuation_, attenuation_, attenuation_};
+    TBeerLambert = {
+        exp(-M.r * l),
+        exp(-M.g * l),
+        exp(-M.b * l)
+    };
+  }
+  //TBeerLambert = {1, 1, 1};
   
   if (addReflect_) {
     C += coefReflect * reflected;
@@ -161,6 +175,11 @@ Color4f GlassShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
       C *= Vector4(diffuse, 1.f);
     }
   }
+  
+  if (addAttenuation) {
+    C *= glm::vec4(TBeerLambert, 1.f);
+  }
+  
   
   return C;
 }

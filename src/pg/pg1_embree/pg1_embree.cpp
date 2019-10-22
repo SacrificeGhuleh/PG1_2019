@@ -9,9 +9,9 @@ int main() {
   _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
   
   testAll();
-
-//  return staticSceneSphere();
-  return staticSceneShip();
+  
+  return staticSceneSphere();
+//  return staticSceneShip();
   
   //return tutorial_1();
   //return tutorial_2();

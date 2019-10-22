@@ -18,11 +18,12 @@ float PhongShader::ambientValue_ = 1.f;
 
 
 PhongShader::PhongShader(Camera *camera, Light *light, RTCScene *rtcScene, std::vector<Surface *> *surfaces,
-                         std::vector<Material *> *materials) : Shader(camera, light, rtcScene, surfaces, materials) {}
+                         std::vector<Material *> *materials) :
+    Shader(camera, light, rtcScene, surfaces, materials) {}
 
 
 Color4f PhongShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
-  if(rayHit.hit.geomID == RTC_INVALID_GEOMETRY_ID){
+  if (rayHit.hit.geomID == RTC_INVALID_GEOMETRY_ID) {
     return getBackgroundColor(rayHit);
   }
   
@@ -33,7 +34,7 @@ Color4f PhongShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
   const Coord2f tex_coord = getTexCoords(geometry, rayHit);
   
   //Acquire material from hit object
-  Material *material = static_cast<Material*>(rtcGetGeometryUserData(geometry));
+  Material *material = static_cast<Material *>(rtcGetGeometryUserData(geometry));
   
   
   if (phongAmbient_ || phongDiffuse_ || phongSpecular_) {
@@ -41,8 +42,8 @@ Color4f PhongShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
     Vector3 ambient = material->ambient;
     
     //diffuse
-    Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y,rayHit.ray.org_z);
-    Vector3 direction(rayHit.ray.dir_x,rayHit.ray.dir_y,rayHit.ray.dir_z);
+    Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y, rayHit.ray.org_z);
+    Vector3 direction(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
     Vector3 worldPos = origin + direction * rayHit.ray.tfar;
     Vector3 lightDir = light_->getPosition() - worldPos;
     

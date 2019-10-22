@@ -275,11 +275,16 @@ int Raytracer::Ui() {
         if (GlassShader::addReflect_) {
           ImGui::Checkbox("Add diffuse to reflect", &GlassShader::addDiffuseToReflect_);
         }
+  
         ImGui::Checkbox("Add refract", &GlassShader::addRefract_);
         if (GlassShader::addRefract_) {
           ImGui::Checkbox("Add diffuse to refract", &GlassShader::addDiffuseToRefract_);
         }
-        
+  
+        ImGui::Checkbox("Add attenuation", &GlassShader::addAttenuation);
+        if (GlassShader::addAttenuation) {
+          ImGui::SliderFloat("Material attenuation", &GlassShader::attenuation_, 0.00f, 10.f);
+        }
         break;
       }
       case ShaderEnum::ShadersCount: {

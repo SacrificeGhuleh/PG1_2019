@@ -19,8 +19,9 @@ public:
   static bool addRefract_;
   static bool addDiffuseToReflect_;
   static bool addDiffuseToRefract_;
+  static bool addAttenuation;
   static float ior_;
-  
+  static float attenuation_;
 };
 
 
