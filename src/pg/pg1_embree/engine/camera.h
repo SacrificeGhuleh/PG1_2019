@@ -2,7 +2,6 @@
 #define CAMERA_H_
 
 #include <math/vector.h>
-#include <math/matrix3x3.h>
 
 /*! \class Camera
 \brief A simple pin-hole camera.
@@ -38,7 +37,7 @@ public:
   
   float getFY() const;
   
-  const Matrix3x3 &getMCW();
+  const glm::mat3 &getMCW();
   
   Vector3 view_from_{}; // ray origin or eye or O
   float f_y_{1.0f}; // focal lenght (px)
@@ -51,7 +50,7 @@ private:
   
   Vector3 up_{Vector3(0.0f, 0.0f, 1.0f)}; // up vector
   
-  Matrix3x3 M_c_w_{}; // transformation matrix from CS -> WS
+  glm::mat3 M_c_w_{}; // transformation matrix from CS -> WS
 };
 
 #endif

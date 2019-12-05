@@ -14,6 +14,7 @@
 
 #include <geometry/material.h>
 
+
 CommonShader::CommonShader(Camera *camera,
                            Light *light,
                            RTCScene *rtcScene,

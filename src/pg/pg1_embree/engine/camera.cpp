@@ -68,7 +68,7 @@ float Camera::getFY() const {
   return f_y_;
 }
 
-const Matrix3x3 &Camera::getMCW() {
+const glm::mat3 &Camera::getMCW() {
   Vector3 z_c = view_from_ - view_at_;
   z_c = glm::normalize(z_c);
   Vector3 x_c = glm::cross(up_, z_c);
@@ -76,7 +76,7 @@ const Matrix3x3 &Camera::getMCW() {
   Vector3 y_c = glm::cross(z_c, x_c);
   y_c = glm::normalize(y_c);
   
-  M_c_w_ = Matrix3x3(x_c, y_c, z_c);
+  M_c_w_ = glm::mat3(x_c, y_c, z_c);
   
   return M_c_w_;
 }

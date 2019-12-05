@@ -105,11 +105,7 @@ set(GEOMETRY
     )
 
 set(MATH
-    src/pg/pg1_embree/math/matrix3x3.cpp
-    src/pg/pg1_embree/math/matrix3x3.h
-    src/pg/pg1_embree/math/mymath.cpp
     src/pg/pg1_embree/math/mymath.h
-    src/pg/pg1_embree/math/vector.cpp
     src/pg/pg1_embree/math/vector.h)
 
 set(SHADERS
@@ -130,7 +126,6 @@ set(SHADERS
 	src/pg/pg1_embree/shaders/commonshader.h)
 
 set(UTILS
-    src/pg/pg1_embree/utils/structs.cpp
     src/pg/pg1_embree/utils/structs.h
     src/pg/pg1_embree/utils/utils.cpp
     src/pg/pg1_embree/utils/utils.h

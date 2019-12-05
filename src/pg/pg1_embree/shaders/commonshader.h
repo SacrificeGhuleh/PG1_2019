@@ -15,6 +15,7 @@ public:
   
   Color4f traceRay(const RtcRayHitIor &rayHit, int depth = 0) override;
   
+  
   template<ShadingType T>
   Color4f traceMaterial(const RtcRayHitIor &rayHit,
                         const Material *material,

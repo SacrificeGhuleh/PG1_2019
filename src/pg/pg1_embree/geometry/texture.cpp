@@ -1,6 +1,30 @@
 #include <stdafx.h>
 #include <geometry/texture.h>
 #include <utils/utils.h>
+#include <algorithm>
+
+template<class T>
+struct Pixel {
+  union {
+    struct {
+      T r;
+      T g;
+      T b;
+      union {
+        T i;
+        T a;
+      };
+    };
+    T *data;
+  };
+  
+};
+
+
+union {
+  float f;
+  BYTE b[4];
+} floatByteUnion;
 
 Texture::Texture(const char *file_name) {
   // image format
@@ -80,17 +104,102 @@ Texture::~Texture() {
 }
 
 Color3f Texture::get_texel(const float u, const float v) const {
-//  assert( ( u >= 0.0f && u <= 1.0f ) && ( v >= 0.0f && v <= 1.0f ) );
+//    assert( ( u >= 0.0f && u <= 1.0f ) && ( v >= 0.0f && v <= 1.0f ) );
   
   const unsigned int x = std::max(0.f, std::min(static_cast<float>(width_) - 1.f, (u * static_cast<float>(width_))));
   const unsigned int y = std::max(0.f, std::min(static_cast<float>(height_) - 1.f, (v * static_cast<float>(height_))));
   
-  const unsigned int offset = y * scan_width_ + x * pixel_size_;
-  const float b = static_cast<float>(data_[offset + 0]) / 255.0f;
-  const float g = static_cast<float>(data_[offset + 1]) / 255.0f;
-  const float r = static_cast<float>(data_[offset + 2]) / 255.0f;
+  float b = 0;
+  float g = 0;
+  float r = 0;
+  float a = 1;
   
-  return /*c_linear*/(Color3f{r, g, b});
+  int pix_size;
+  
+  if (pixel_size_ == 3 * sizeof(uint8_t)) pix_size = sizeof(uint8_t);
+  if (pixel_size_ == 4 * sizeof(uint8_t)) pix_size = sizeof(uint8_t);
+  if (pixel_size_ == 3 * sizeof(float)) pix_size = sizeof(float);
+  if (pixel_size_ == 4 * sizeof(float)) pix_size = sizeof(float);
+  
+  unsigned char *p1 = &data_[x * pixel_size_ + y * scan_width_ + (0 * pix_size)];
+  unsigned char *p2 = &data_[x * pixel_size_ + y * scan_width_ + (1 * pix_size)];
+  unsigned char *p3 = &data_[x * pixel_size_ + y * scan_width_ + (2 * pix_size)];
+  unsigned char *p4 = &data_[x * pixel_size_ + y * scan_width_ + (3 * pix_size)];
+  
+  
+  if (pixel_size_ == 3 * sizeof(uint8_t)) {
+    
+    b = (p1[0]) / 255.0f;
+    g = (p2[0]) / 255.0f;
+    r = (p3[0]) / 255.0f;
+    
+  } else if (pixel_size_ == 4 * sizeof(uint8_t)) {
+    
+    b = (p1[0]) / 255.0f;
+    g = (p2[0]) / 255.0f;
+    r = (p3[0]) / 255.0f;
+    a = (p4[0]) / 255.0f;
+  } else if (pixel_size_ == 3 * sizeof(float)) {
+    memcpy(&b, &p1, sizeof(float));
+    memcpy(&g, &p2, sizeof(float));
+    memcpy(&r, &p3, sizeof(float));
+  } else if (pixel_size_ == 4 * sizeof(float)) {
+    b = static_cast<float>(p1[0]);
+    g = static_cast<float>(p2[0]);
+    r = static_cast<float>(p3[0]);
+    a = static_cast<float>(p4[0]);
+  }
+  
+  
+  return /*c_linear*/(Color3f{r, g, b/*,a*/});
+
+//
+//  const unsigned int x = std::max(0.f, std::min(static_cast<float>(width_) - 1.f, (u * static_cast<float>(width_))));
+//  const unsigned int y = std::max(0.f, std::min(static_cast<float>(height_) - 1.f, (v * static_cast<float>(height_))));
+//
+//  const int x0 = static_cast<int>(floor(x));
+//  const int y0 = static_cast<int>(floor(y));
+//
+//  const int x1 = std::min<int>(width_ - 1, x0 + 1);
+//  const int y1 = std::min<int>(height_ - 1, y0 + 1);
+//
+//  unsigned char *p1 = &data_[x0 * pixel_size_ + y0 * scan_width_];
+//  unsigned char *p2 = &data_[x1 * pixel_size_ + y0 * scan_width_];
+//  unsigned char *p3 = &data_[x1 * pixel_size_ + y1 * scan_width_];
+//  unsigned char *p4 = &data_[x0 * pixel_size_ + y1 * scan_width_];
+//
+//  const float kx = x - x0;
+//  const float ky = y - y0;
+//
+//
+//  float b = (p1[0] * (1 - kx) * (1 - ky)) +
+//                  (p2[0] *      kx  * (1 - ky)) +
+//                  (p3[0] *      kx  *      ky)  +
+//                  (p4[0] * (1 - kx) *      ky);
+//
+//  float g = (p1[1] * (1 - kx) * (1 - ky)) +
+//                  (p2[1] *      kx  * (1 - ky)) +
+//                  (p3[1] *      kx  *      ky)  +
+//                  (p4[1] * (1 - kx) *      ky);
+//
+//  float r = (p1[2] * (1 - kx) * (1 - ky)) +
+//                  (p2[2] *      kx  * (1 - ky)) +
+//                  (p3[2] *      kx  *      ky)  +
+//                  (p4[2] * (1 - kx) *      ky);
+//
+//
+//
+//  b *= static_cast<float>(1.0 / 255.0);
+//  g *= static_cast<float>(1.0 / 255.0);
+//  r *= static_cast<float>(1.0 / 255.0);
+
+//  Color4f final_color = (Color4f(p1[0], p1[1], p1[2], p1[3]) * (1 - kx) * (1 - ky) +
+//                         Color4f(p2[0], p2[1], p2[2], p2[3]) * kx * (1 - ky) +
+//                         Color4f(p3[0], p3[1], p3[2], p3[3]) * kx * ky +
+//                         Color4f(p4[0], p4[1], p4[2], p4[3]) * (1 - kx) * ky) *
+//                        static_cast<float>(1.0 / 255.0);
+//  
+  return c_linear(Color3f{r, g, b});
 }
 
 unsigned int Texture::width() const {
