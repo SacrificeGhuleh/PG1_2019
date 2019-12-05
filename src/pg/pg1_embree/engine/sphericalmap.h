@@ -14,7 +14,7 @@ class Texture;
 
 class SphericalMap {
 public:
-  explicit SphericalMap(std::string filename);
+  explicit SphericalMap(const std::string& filename);
   
   Color3f texel(const Vector3 &pos);
 

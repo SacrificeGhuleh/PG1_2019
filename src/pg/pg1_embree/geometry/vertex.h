@@ -20,19 +20,19 @@
 */
 struct /*ALIGN*/ Vertex {
 public:
-  Vector3 position; /*!< Pozice vertexu. */
-  Vector3 normal; /*!< Normála vertexu. */
-  Vector3 color; /*!< RGB barva vertexu <0, 1>^3. */
-  Coord2f texture_coords[NO_TEXTURE_COORDS]; /*!< Texturovací souřadnice. */
-  Vector3 tangent; /*!< První osa souřadného systému tangenta-bitangenta-normála. */
+  Vector3 position{}; /*!< Pozice vertexu. */
+  Vector3 normal{}; /*!< Normála vertexu. */
+  Vector3 color{}; /*!< RGB barva vertexu <0, 1>^3. */
+  Coord2f texture_coords[NO_TEXTURE_COORDS]{}; /*!< Texturovací souřadnice. */
+  Vector3 tangent{}; /*!< První osa souřadného systému tangenta-bitangenta-normála. */
   
-  char pad[8]; // doplnění na 64 bytů, mělo by to mít alespoň 4 byty, aby se sem vešel 32-bitový ukazatel
+  char pad[8]{}; // doplnění na 64 bytů, mělo by to mít alespoň 4 byty, aby se sem vešel 32-bitový ukazatel
   
   //! Výchozí konstruktor.
   /*!
   Inicializuje všechny složky vertexu na hodnotu nula.
   */
-  Vertex() {}
+  Vertex() = default;
   
   //! Obecný konstruktor.
   /*!
@@ -43,7 +43,7 @@ public:
   \param color barva vertexu.
   \param texture_coords nepovinný ukazatel na pole texturovacích souřadnic.
   */
-  Vertex(const Vector3 position, const Vector3 normal, Vector3 color, Coord2f *texture_coords = NULL);
+  Vertex(Vector3 position, Vector3 normal, Vector3 color, Coord2f *texture_coords = nullptr);
   
   //void Print();
 };

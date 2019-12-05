@@ -14,13 +14,15 @@
 #include <engine/light.h>
 #include <engine/camera.h>
 
+#include <glm/gtx/norm.hpp>
+
 bool GlassShader::addReflect_ = true;
 bool GlassShader::addRefract_ = true;
 bool GlassShader::addDiffuseToReflect_ = false;
 bool GlassShader::addDiffuseToRefract_ = false;
-bool GlassShader::addAttenuation = false;
-float GlassShader::attenuation_ = 0.f;
-float GlassShader::ior_ = 1.5f;
+bool GlassShader::addAttenuation = true;
+float GlassShader::attenuation_ = 0.5f;
+float GlassShader::ior_ = 1.3f;
 
 GlassShader::GlassShader(Camera *camera, Light *light, RTCScene *rtcscene, std::vector<Surface *> *surfaces,
                          std::vector<Material *> *materials) : Shader(camera, light, rtcscene, surfaces, materials) {}
@@ -91,9 +93,9 @@ Color4f GlassShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
     n2 = IOR_AIR;
   }
 
-//  if(n1 < 0 || n2 < 0){
-//    n1 = n2 = 1.f;
-//  }
+  if(n1 < 0 || n2 < 0){
+    n1 = n2 = 1.f;
+  }
   
   assert(n1 >= 0);
   assert(n2 >= 0);
@@ -165,21 +167,20 @@ Color4f GlassShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
   if (addReflect_) {
     C += coefReflect * reflected;
     if (addDiffuseToReflect_) {
-      C *= Vector4(diffuse, 1.f);
+      C += Vector4(diffuse, 1.f);
     }
   }
   
   if (addRefract_) {
     C += coefRefract * refracted;
     if (addDiffuseToRefract_) {
-      C *= Vector4(diffuse, 1.f);
+      C += Vector4(diffuse, 1.f);
     }
   }
   
   if (addAttenuation) {
     C *= glm::vec4(TBeerLambert, 1.f);
   }
-  
   
   return C;
 }

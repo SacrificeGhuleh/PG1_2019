@@ -2,9 +2,10 @@ cmake_minimum_required(VERSION 3.14)
 project(PG1_2019)
 #INCLUDE(cmake-precompiled-header/PrecompiledHeader.cmake)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-attributes")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 #set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
@@ -124,7 +125,9 @@ set(SHADERS
     src/pg/pg1_embree/shaders/recursivephongshader.cpp
     src/pg/pg1_embree/shaders/recursivephongshader.h
     src/pg/pg1_embree/shaders/glassshader.cpp
-    src/pg/pg1_embree/shaders/glassshader.h)
+    src/pg/pg1_embree/shaders/glassshader.h 
+	src/pg/pg1_embree/shaders/commonshader.cpp 
+	src/pg/pg1_embree/shaders/commonshader.h)
 
 set(UTILS
     src/pg/pg1_embree/utils/structs.cpp
@@ -141,7 +144,10 @@ set(SRC
     src/pg/pg1_embree/stdafx.cpp)
 
 set (TESTS
-     src/pg/pg1_embree/tests/test.h)
+     src/pg/pg1_embree/tests/test.h 
+	 src/pg/pg1_embree/shaders/shadingtype.h 
+	 src/pg/pg1_embree/shaders/pathtracingshader.cpp 
+	 src/pg/pg1_embree/shaders/pathtracingshader.h)
 
 add_executable(${PROJECT_NAME} ${SRC} ${UTILS} ${SHADERS} ${MATH} ${GEOMETRY} ${ENGINE} ${TESTS} ${IMGUI} ${PCH})
 

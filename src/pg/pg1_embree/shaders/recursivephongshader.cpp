@@ -33,7 +33,7 @@ Color4f RecursivePhongShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
   const Coord2f tex_coord = getTexCoords(geometry, rayHit);
   
   //Acquire material from hit object
-  Material *material = static_cast<Material*>(rtcGetGeometryUserData(geometry));
+  Material *material = static_cast<Material *>(rtcGetGeometryUserData(geometry));
   //ambient
   Vector3 ambient = material->ambient;
   

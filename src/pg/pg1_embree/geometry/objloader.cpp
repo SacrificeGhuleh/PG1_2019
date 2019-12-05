@@ -116,6 +116,10 @@ int LoadMTL(const char *file_name, const char *path, std::vector<Material *> &ma
         {
           sscanf(tmp, "%*s %f %f %f", &material->ambient.x, &material->ambient.y, &material->ambient.z);
         }
+        if (strstr(tmp, "Kabs") == tmp) // ambient color of the material
+        {
+          sscanf(tmp, "%*s %f %f %f", &material->absorption.x, &material->absorption.y, &material->absorption.z);
+        }
         if (strstr(tmp, "Kd") == tmp) // diffuse color of the material
         {
           sscanf(tmp, "%*s %f %f %f", &material->diffuse.x, &material->diffuse.y, &material->diffuse.z);
@@ -132,9 +136,17 @@ int LoadMTL(const char *file_name, const char *path, std::vector<Material *> &ma
         {
           sscanf(tmp, "%*s %f", &material->shininess);
         }
-        if (strstr(tmp, "ior") == tmp) // ior coefficient
+        if (strstr(tmp, "ior") == tmp || strstr(tmp, "Ni") == tmp) // ior coefficient
         {
           sscanf(tmp, "%*s %f", &material->ior);
+        }
+        if (strstr(tmp, "shader") == tmp) // Shader number
+        {
+          int type = -1;
+          sscanf(tmp, "%*s %d", &type);
+          if (isShadingType(type)) {
+            material->shadingType = static_cast<ShadingType>(type);
+          }
         }
         if (strstr(tmp, "map_Kd") == tmp) // diffuse map
         {

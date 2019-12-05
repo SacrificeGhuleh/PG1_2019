@@ -87,6 +87,4 @@ inline void testAll() {
 }
 
 
-
-
 #endif //PG1_2019_TEST_H

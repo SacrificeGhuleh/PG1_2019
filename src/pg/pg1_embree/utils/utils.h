@@ -1,8 +1,8 @@
 #ifndef UTILS_H_
 #define UTILS_H_
 
-#define MAT_ELEM(mat, type, x, y) reinterpret_cast<type *>( ( mat ).data + \
-  ( mat ).step * ( y ) + ( mat ).elemSize() * ( x ) )
+#define MAT_ELEM(mat, type, x, y) (reinterpret_cast<(type) *>( ( mat ).data + \
+  ( mat ).step * ( y ) + ( mat ).elemSize() * ( x ) ))
 
 // A macro to disallow the copy constructor and operator= functions
 // This should be used in the private: declarations for a class
@@ -11,18 +11,18 @@
   void operator=( const type_name & )
 
 #define SAFE_DELETE(p) { \
-  if ( p != NULL ) \
+  if ( (p) != NULL ) \
   { \
-    delete p; \
-    p = NULL; \
+    delete (p); \
+    (p) = NULL; \
   } \
 }
 
 #define SAFE_DELETE_ARRAY(p) { \
-  if ( p != NULL ) \
+  if ( (p) != NULL ) \
   { \
-    delete [] p; \
-    p = NULL; \
+    delete [] (p); \
+    (p) = NULL; \
   } \
 }
 
@@ -35,7 +35,7 @@ void SafeDeleteVectorItems(std::vector<T> v) {
   while (v.size() > 0) {
     T item = v.back();
     v.pop_back();
-    SAFE_DELETE(item);
+    SAFE_DELETE(item)
   }
 }
 
@@ -59,7 +59,7 @@ namespace utils {
 \param range_max Horní mez intervalu.
 \return Pseudonáhodné číslo.
 */
-float Random(const float range_min = 0.0f, const float range_max = 1.0f);
+float Random(float range_min = 0.0f, float range_max = 1.0f);
 
 /*! \fn long long GetFileSize64( const char * file_name )
 \brief Vrátí velikost souboru v bytech.

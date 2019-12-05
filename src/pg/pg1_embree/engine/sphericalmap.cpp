@@ -10,7 +10,7 @@
 #include <math/mymath.h>
 #include <geometry/texture.h>
 
-SphericalMap::SphericalMap(std::string filename) {
+SphericalMap::SphericalMap(const std::string& filename) {
   texture_ = std::make_unique<Texture>(filename.c_str());
 //  texture_ = new Texture(filename.c_str());
   assert(texture_->height() != 0);

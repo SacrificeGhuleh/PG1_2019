@@ -21,8 +21,8 @@ class Light;
 */
 class Raytracer : public SimpleGuiDX11 {
 public:
-  Raytracer(const int width, const int height,
-            const float fov_y, const Vector3 view_from, const Vector3 view_at,
+  Raytracer(int width, int height,
+            float fov_y, Vector3 view_from, Vector3 view_at,
             const char *config = "threads=0,verbose=3");
   
   ~Raytracer();
@@ -31,11 +31,17 @@ public:
   
   int ReleaseDeviceAndScene();
   
-  void LoadScene(const std::string file_name);
+  void LoadScene(std::string file_name);
   
-  Color4f get_pixel(const int x, const int y, const float t = 0.0f) override;
+  Color4f get_pixel(int x, int y, float t = 0.0f) override;
   
-  int Ui();
+  virtual std::array<Color4f, 4> get_pixel4(int x, int y, float t = 0.0f);
+  
+  virtual std::array<Color4f, 8> get_pixel8(int x, int y, float t = 0.0f);
+  
+  virtual std::array<Color4f, 16> get_pixel16(int x, int y, float t = 0.0f);
+  
+  int Ui() override;
 
 
 private:

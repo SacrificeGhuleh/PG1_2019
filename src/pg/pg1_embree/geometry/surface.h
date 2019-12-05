@@ -27,7 +27,7 @@ public:
   \param name název plochy.
   \param n počet trojúhelníků tvořících síť.
   */
-  Surface(const std::string &name, const int n);
+  Surface(const std::string &name, int n);
   
   //! Destruktor.
   /*!
@@ -40,7 +40,7 @@ public:
   \param i index trojúhelníka.
   \return Trojúhelník.
   */
-  Triangle &get_triangle(const int i);
+  Triangle &get_triangle(int i);
   
   //! Vrátí pole všech trojúhelníků.
   /*!

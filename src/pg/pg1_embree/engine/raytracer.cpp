@@ -18,6 +18,8 @@
 
 //Utils
 #include <utils/utils.h>
+#include <shaders/commonshader.h>
+#include <shaders/pathtracingshader.h>
 
 Raytracer::Raytracer(const int width, const int height,
                      const float fov_y, const Vector3 view_from, const Vector3 view_at,
@@ -41,7 +43,7 @@ Raytracer::Raytracer(const int width, const int height,
 //  sphericalMap_ = new SphericalMap("data/outdoor_umbrellas_4k.hdr");
   
   
-  activeShader_ = ShaderEnum::Glass;
+  activeShader_ = ShaderEnum::Common;
   
   shaders_[static_cast<int>(ShaderEnum::None)] = new Shader(
       &camera_,
@@ -85,6 +87,19 @@ Raytracer::Raytracer(const int width, const int height,
       &surfaces_,
       &materials_);
   
+  shaders_[static_cast<int>(ShaderEnum::Common)] = new CommonShader(
+      &camera_,
+      light_,
+      &scene_,
+      &surfaces_,
+      &materials_);
+  shaders_[static_cast<int>(ShaderEnum::PathTracing)] = new PathTracingShader(
+      &camera_,
+      light_,
+      &scene_,
+      &surfaces_,
+      &materials_);
+  
   for (auto shader : shaders_) {
     shader->setDefaultBgColor(&defaultBgColor_);
     shader->setSphericalMap(sphericalMap_);
@@ -113,6 +128,7 @@ int Raytracer::InitDeviceAndScene(const char *config) {
   //robust ray tracing
   rtcSetSceneFlags(scene_, RTC_SCENE_FLAG_ROBUST);
   
+  rtcSetSceneBuildQuality(scene_, RTC_BUILD_QUALITY_HIGH);
   return S_OK;
 }
 
@@ -184,7 +200,20 @@ void Raytracer::LoadScene(const std::string file_name) {
 }
 
 Color4f Raytracer::get_pixel(const int x, const int y, const float t) {
-  return c_srgb(shaders_[static_cast<int>(activeShader_)]->getPixel(x, y));
+  return (shaders_[static_cast<int>(activeShader_)]->getPixel(x, y));
+}
+
+
+std::array<Color4f, 4> Raytracer::get_pixel4(int x, int y, float t) {
+  return shaders_[static_cast<int>(activeShader_)]->getPixel4(x, y);
+}
+
+std::array<Color4f, 8> Raytracer::get_pixel8(int x, int y, float) {
+  return shaders_[static_cast<int>(activeShader_)]->getPixel8(x, y);
+}
+
+std::array<Color4f, 16> Raytracer::get_pixel16(int x, int y, float) {
+  return shaders_[static_cast<int>(activeShader_)]->getPixel16(x, y);
 }
 
 int Raytracer::Ui() {
@@ -194,7 +223,15 @@ int Raytracer::Ui() {
       "Phong",
       "Normals",
       "Recursive Phong",
-      "Glass"};
+      "Glass",
+      "Common",
+      "Path tracer"};
+  
+  static const char *multiRayNames[4] = {
+      "1x1",
+      "2x2",
+      "2x4",
+      "4x4"};
   
   
   ImGui::Begin("Ray Tracer Params", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
@@ -217,6 +254,9 @@ int Raytracer::Ui() {
     ImGui::Combo("Selected Shader", reinterpret_cast<int *>(&activeShader_), shaderNames,
                  static_cast<int>(ShaderEnum::ShadersCount));
     
+    ImGui::Combo("Selected Multiray", reinterpret_cast<int *>(&multiRay_), multiRayNames,
+                 4);
+    
     ImGui::Checkbox("Flip texture U", &Shader::flipTextureU_);
     ImGui::Checkbox("Flip texture V", &Shader::flipTextureV_);
     ImGui::Checkbox("Sphere map", &Shader::sphereMap_);
@@ -225,23 +265,21 @@ int Raytracer::Ui() {
     
     ImGui::SliderFloat("Ray near", &Shader::tNear_, 0, 0.5f);
     
-    ImGui::SliderInt("Visualize X", &Shader::visualizeX_, 0, 640);
-    ImGui::SliderInt("Visualize Y", &Shader::visualizeY_, 0, 480);
     if (Shader::supersampling_) {
+      ImGui::Checkbox("Rand supersampling", &Shader::supersamplingRandom_);
       ImGui::SliderInt("Samples", &Shader::samplingSize_, 1, 10);
     }
+    
+    ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
     switch (activeShader_) {
       
       case ShaderEnum::None: {
-        ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
         break;
       }
       case ShaderEnum::Diffuse: {
-        ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
         break;
       }
       case ShaderEnum::Phong: {
-        ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
         ImGui::Checkbox("Ambient", &PhongShader::phongAmbient_);
         ImGui::Checkbox("Diffuse", &PhongShader::phongDiffuse_);
         ImGui::Checkbox("Specular", &PhongShader::phongSpecular_);
@@ -254,19 +292,16 @@ int Raytracer::Ui() {
         break;
       }
       case ShaderEnum::Normals: {
-        ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
         break;
       }
       case ShaderEnum::RecursivePhong: {
         ImGui::Separator();
-        ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
-        ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 0, 10);
+        ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 1, 10);
         ImGui::SliderFloat("Reflectivity", &RecursivePhongShader::reflectivityCoef, 0, 1);
         break;
       }
       case ShaderEnum::Glass: {
         ImGui::Separator();
-        ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
         ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 0, 10);
         ImGui::SliderFloat("Ior", &GlassShader::ior_, 0.01f, 2.f);
         ImGui::Separator();
@@ -275,15 +310,33 @@ int Raytracer::Ui() {
         if (GlassShader::addReflect_) {
           ImGui::Checkbox("Add diffuse to reflect", &GlassShader::addDiffuseToReflect_);
         }
-  
+        
         ImGui::Checkbox("Add refract", &GlassShader::addRefract_);
         if (GlassShader::addRefract_) {
           ImGui::Checkbox("Add diffuse to refract", &GlassShader::addDiffuseToRefract_);
         }
-  
+        
         ImGui::Checkbox("Add attenuation", &GlassShader::addAttenuation);
         if (GlassShader::addAttenuation) {
           ImGui::SliderFloat("Material attenuation", &GlassShader::attenuation_, 0.00f, 10.f);
+        }
+        break;
+      }
+      case ShaderEnum::Common: {
+        ImGui::Separator();
+        ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 0, 10);
+        ImGui::SliderFloat("Ior", &GlassShader::ior_, 0.01f, 2.f);
+        ImGui::Separator();
+        break;
+      }
+      case ShaderEnum::PathTracing: {
+        ImGui::Separator();
+        ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 0, 10);
+        ImGui::SliderFloat("Ior", &GlassShader::ior_, 0.01f, 2.f);
+        ImGui::Separator();
+        ImGui::Checkbox("Use parent GetPixel", &PathTracingShader::useParentGetPixel_);
+        if (!PathTracingShader::useParentGetPixel_) {
+          ImGui::SliderInt("Samples per pixel", &PathTracingShader::samples_, 1, 2000);
         }
         break;
       }

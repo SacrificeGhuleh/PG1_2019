@@ -5,13 +5,15 @@
 #ifndef PG1_2019_SHADERENUM_H
 #define PG1_2019_SHADERENUM_H
 
-enum class ShaderEnum : int{
+enum class ShaderEnum : int {
   None,
   Diffuse,
   Phong,
   Normals,
   RecursivePhong,
   Glass,
+  Common,
+  PathTracing,
   ShadersCount
 };
 

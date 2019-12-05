@@ -37,6 +37,7 @@
 
 #include <dinput.h>
 
-
-
+//glm includes
+#include <glm/geometric.hpp>
+#include <glm/gtx/norm.hpp>
 #endif

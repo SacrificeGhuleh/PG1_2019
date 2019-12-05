@@ -11,7 +11,7 @@
 
 class RecursivePhongShader : public Shader {
 public:
-  virtual Color4f traceRay(const RtcRayHitIor &rayHit, int depth = 0) override;
+  Color4f traceRay(const RtcRayHitIor &rayHit, int depth = 0) override;
   
   //virtual Color4f getPixel(const int x, const int y) override;
   

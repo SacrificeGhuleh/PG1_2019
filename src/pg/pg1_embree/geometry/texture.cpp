@@ -51,6 +51,19 @@ Texture::Texture(const char *file_name) {
       
       FreeImage_Unload(dib);
       bits = nullptr;
+      
+      for (int x = 0; x < width_; x++) {
+        for (int y = 0; y < height_; y++) {
+          const unsigned int offset = y * scan_width_ + x * pixel_size_;
+          float b = c_linear(static_cast<float>(data_[offset + 0]) / 255.0f);
+          float g = c_linear(static_cast<float>(data_[offset + 1]) / 255.0f);
+          float r = c_linear(static_cast<float>(data_[offset + 2]) / 255.0f);
+          
+          data_[offset + 0] = b * 255.f;
+          data_[offset + 1] = g * 255.f;
+          data_[offset + 2] = r * 255.f;
+        }
+      }
     }
   }
 }
@@ -77,8 +90,7 @@ Color3f Texture::get_texel(const float u, const float v) const {
   const float g = static_cast<float>(data_[offset + 1]) / 255.0f;
   const float r = static_cast<float>(data_[offset + 2]) / 255.0f;
   
-  return c_linear(Color3f{r, g, b});
-  return Color3f{r, g, b};
+  return /*c_linear*/(Color3f{r, g, b});
 }
 
 unsigned int Texture::width() const {

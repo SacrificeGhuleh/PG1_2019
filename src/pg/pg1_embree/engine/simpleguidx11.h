@@ -1,12 +1,14 @@
 #pragma once
 
+#include <array>
+
 #include <engine/simpleguidx11.h>
 #include <utils/structs.h>
 #include <math/vector.h>
 
 class SimpleGuiDX11 {
 public:
-  SimpleGuiDX11(const int width, const int height);
+  SimpleGuiDX11(int width, int height);
   
   ~SimpleGuiDX11();
   
@@ -14,6 +16,15 @@ public:
   
   static float producerTime;
 protected:
+  
+  enum class MultiRay {
+    PIXEL_1x1,
+    PIXEL_2x2,
+    PIXEL_2x4,
+    PIXEL_4x4
+  };
+  
+  MultiRay multiRay_;
   
   int Init();
   
@@ -35,7 +46,13 @@ protected:
   
   virtual int Ui();
   
-  virtual Color4f get_pixel(const int x, const int y, const float t = 0.0f);
+  virtual Color4f get_pixel(int x, int y, float t = 0.0f);
+  
+  virtual std::array<Color4f, 4> get_pixel4(int x, int y, float t = 0.0f);
+  
+  virtual std::array<Color4f, 8> get_pixel8(int x, int y, float t = 0.0f);
+  
+  virtual std::array<Color4f, 16> get_pixel16(int x, int y, float t = 0.0f);
   
   void Producer();
   

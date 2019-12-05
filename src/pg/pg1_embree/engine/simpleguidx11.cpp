@@ -1,9 +1,10 @@
 #include <stdafx.h>
 #include <engine/simpleguidx11.h>
+#include <utils/utils.h>
 
 float SimpleGuiDX11::producerTime;
 
-SimpleGuiDX11::SimpleGuiDX11(const int width, const int height) {
+SimpleGuiDX11::SimpleGuiDX11(const int width, const int height) : multiRay_{SimpleGuiDX11::MultiRay::PIXEL_1x1} {
   width_ = width;
   height_ = height;
   
@@ -76,8 +77,51 @@ int SimpleGuiDX11::Ui() {
   return 0;
 }
 
-Color4f SimpleGuiDX11::get_pixel(const int x, const int y, const float t) {
+Color4f SimpleGuiDX11::get_pixel(const int, const int, const float) {
   return Color4f{1.0f, 0.0f, 1.0f, 1.0f};
+}
+
+std::array<Color4f, 4> SimpleGuiDX11::get_pixel4(int x, int y, float t) {
+  return {
+      Color4f{1.0f, 0.0f, 0.0f, 1.0f},
+      Color4f{0.0f, 1.0f, 0.0f, 1.0f},
+      Color4f{0.0f, 0.0f, 1.0f, 1.0f},
+      Color4f{1.0f, 1.0f, 0.0f, 1.0f}
+  };
+}
+
+std::array<Color4f, 8> SimpleGuiDX11::get_pixel8(int x, int y, float) {
+  return {
+      Color4f{1.0f, 0.0f, 0.0f, 1.0f},
+      Color4f{0.0f, 1.0f, 0.0f, 1.0f},
+      Color4f{1.0f, 0.0f, 1.0f, 1.0f},
+      Color4f{1.0f, 1.0f, 0.0f, 1.0f},
+      Color4f{0.0f, 1.0f, 0.0f, 1.0f},
+      Color4f{0.0f, 1.0f, 1.0f, 1.0f},
+      Color4f{0.5f, 0.5f, 0.0f, 1.0f},
+      Color4f{0.7f, 0.3f, 0.5f, 1.0f}
+  };
+}
+
+std::array<Color4f, 16> SimpleGuiDX11::get_pixel16(int x, int y, float) {
+  return {
+      Color4f{0.0f, 0.0f, 0.0f, 1.0f},
+      Color4f{0.1f, 0.0f, 0.5f, 1.0f},
+      Color4f{0.2f, 0.0f, 1.0f, 1.0f},
+      Color4f{0.3f, 0.0f, 0.0f, 1.0f},
+      Color4f{0.4f, 0.0f, 0.5f, 1.0f},
+      Color4f{0.5f, 0.0f, 1.0f, 1.0f},
+      Color4f{0.6f, 0.0f, 0.0f, 1.0f},
+      Color4f{0.7f, 0.0f, 0.5f, 1.0f},
+      Color4f{0.8f, 0.0f, 1.0f, 1.0f},
+      Color4f{0.9f, 0.0f, 0.0f, 1.0f},
+      Color4f{1.0f, 0.0f, 0.5f, 1.0f},
+      Color4f{0.9f, 0.0f, 1.0f, 1.0f},
+      Color4f{0.8f, 0.0f, 0.0f, 1.0f},
+      Color4f{0.7f, 0.0f, 0.5f, 1.0f},
+      Color4f{0.6f, 0.0f, 1.0f, 1.0f},
+      Color4f{0.5f, 0.0f, 0.0f, 1.0f}
+  };
 }
 
 void SimpleGuiDX11::Producer() {
@@ -99,17 +143,85 @@ void SimpleGuiDX11::Producer() {
     // compute rendering
     //std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) );
     
-    #pragma omp parallel for num_threads(4)
-    for (int y = 0; y < height_; ++y) {
-      for (int x = 0; x < width_; ++x) {
-        const Color4f pixel = get_pixel(x, y, t);
-        const int offset = (y * width_ + x) * 4;
-        
-        local_data[offset] = pixel.r;
-        local_data[offset + 1] = pixel.g;
-        local_data[offset + 2] = pixel.b;
-        local_data[offset + 3] = pixel.a;
-        //pixel.copy( local_data[offset] );
+    switch (multiRay_) {
+      case MultiRay::PIXEL_1x1: {
+//        #pragma omp parallel for num_threads(4)
+#pragma omp parallel for schedule(dynamic, 4) shared(local_data)
+        for (int y = 0; y < height_; ++y) {
+          for (int x = 0; x < width_; ++x) {
+            const Color4f pixel = get_pixel(x, y, t);
+            const int offset = (y * width_ + x) * 4;
+            
+            local_data[offset + 0] = c_srgb(pixel.r);
+            local_data[offset + 1] = c_srgb(pixel.g);
+            local_data[offset + 2] = c_srgb(pixel.b);
+            local_data[offset + 3] = c_srgb(pixel.a);
+            //pixel.copy( local_data[offset] );
+          }
+        }
+        break;
+      }
+      case MultiRay::PIXEL_2x2: {
+//        #pragma omp parallel for num_threads(4)
+#pragma omp parallel for schedule(dynamic, 4) shared(local_data)
+        for (int y = 0; y < height_; y += 2) {
+          for (int x = 0; x < width_; x += 2) {
+            std::array<Color4f, 4> pixels = get_pixel4(x, y, t);
+            int idx = 0;
+            for (int yo = 0; yo < 2; yo++) {
+              for (int xo = 0; xo < 2; xo++) {
+                const int offset = ((y + yo) * width_ + (x + xo)) * 4;
+                local_data[offset + 0] = c_srgb(pixels[idx].r);
+                local_data[offset + 1] = c_srgb(pixels[idx].g);
+                local_data[offset + 2] = c_srgb(pixels[idx].b);
+                local_data[offset + 3] = c_srgb(pixels[idx].a);
+                ++idx;
+              }
+            }
+          }
+        }
+        break;
+      }
+      case MultiRay::PIXEL_2x4: {
+//        #pragma omp parallel for num_threads(4)
+#pragma omp parallel for schedule(dynamic, 4) shared(local_data)
+        for (int y = 0; y < height_; y += 2) {
+          for (int x = 0; x < width_; x += 4) {
+            std::array<Color4f, 8> pixels = get_pixel8(x, y, t);
+            int idx = 0;
+            for (int yo = 0; yo < 2; yo++) {
+              for (int xo = 0; xo < 4; xo++) {
+                const int offset = ((y + yo) * width_ + (x + xo)) * 4;
+                local_data[offset + 0] = c_srgb(pixels[idx].r);
+                local_data[offset + 1] = c_srgb(pixels[idx].g);
+                local_data[offset + 2] = c_srgb(pixels[idx].b);
+                local_data[offset + 3] = c_srgb(pixels[idx].a);
+                ++idx;
+              }
+            }
+          }
+        }
+        break;
+      }
+      case MultiRay::PIXEL_4x4: {
+//        #pragma omp parallel for num_threads(4)
+#pragma omp parallel for schedule(dynamic, 4) shared(local_data)
+        for (int y = 0; y < height_; y += 4) {
+          for (int x = 0; x < width_; x += 4) {
+            std::array<Color4f, 16> pixels = get_pixel16(x, y, t);
+            int idx = 0;
+            for (int yo = 0; yo < 4; yo++) {
+              for (int xo = 0; xo < 4; xo++) {
+                const int offset = ((y + yo) * width_ + (x + xo)) * 4;
+                local_data[offset + 0] = c_srgb(pixels[idx].r);
+                local_data[offset + 1] = c_srgb(pixels[idx].g);
+                local_data[offset + 2] = c_srgb(pixels[idx].b);
+                local_data[offset + 3] = c_srgb(pixels[idx].a);
+                ++idx;
+              }
+            }
+          }
+        }
       }
     }
     
@@ -198,12 +310,12 @@ int SimpleGuiDX11::MainLoop() {
           // which we can't undo at the moment without finer window depth/z control.
           //ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
           
-          if (ImGui::MenuItem("Sphere", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0)){
-  
+          if (ImGui::MenuItem("Sphere", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0)) {
+          
           }
           if (ImGui::MenuItem("Spaceship", "",
-                              (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0)){
-  
+                              (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0)) {
+            
           }
           ImGui::EndMenu();
         }
@@ -246,7 +358,7 @@ int SimpleGuiDX11::MainLoop() {
   finish_request_.store(true, std::memory_order_release);
   producer_thread.join();
   
-  return 0;
+  return r;
 }
 
 void SimpleGuiDX11::CreateRenderTarget() {

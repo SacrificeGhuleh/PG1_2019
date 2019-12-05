@@ -8,7 +8,6 @@
 #include <shaders/normalsshader.h>
 #include <engine/light.h>
 #include <engine/camera.h>
-#include <glm/geometric.hpp>
 
 
 NormalsShader::NormalsShader(Camera *camera, Light *light, RTCScene *rtcscene, std::vector<Surface *> *surfaces,

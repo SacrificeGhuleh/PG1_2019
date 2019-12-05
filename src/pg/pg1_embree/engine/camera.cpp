@@ -1,6 +1,5 @@
 #include <stdafx.h>
 #include <engine/camera.h>
-#include <glm/geometric.hpp>
 
 Camera::Camera(const int width, const int height, const float fov_y,
                const Vector3 &view_from, const Vector3 view_at) {
@@ -83,7 +82,7 @@ const Matrix3x3 &Camera::getMCW() {
 }
 
 const Vector3 Camera::getRayDirection(const float x_i, const float y_i) {
-  Vector3 dc = Vector3((static_cast<float>(x_i) - (static_cast<float>(width_) * 0.5f)),
+  Vector3 dc = Vector3((x_i - (static_cast<float>(width_) * 0.5f)),
                        (static_cast<float>(height_) * 0.5f) - y_i,
                        -f_y_);
   dc = glm::normalize(dc);

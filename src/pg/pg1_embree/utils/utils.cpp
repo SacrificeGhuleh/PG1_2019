@@ -12,22 +12,7 @@ auto uniform_generator = std::bind(Distribution(0.0f, 1.0f), Engine(1));
 
 
 float Random(const float range_min, const float range_max) {
-  float ksi;
-
-//#pragma omp critical ( random ) 
-  {
-    //ksi = static_cast<float>( rand() ) / ( RAND_MAX + 1 );
-    ksi = static_cast<float>( uniform_generator());
-    
-    /*static float randoms[] = { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f };
-    static int next = 0;
-    ksi = randoms[next];
-#pragma omp atomic
-    next++;
-    if ( next > 10 ) next = 0;*/
-  }
-  
-  return ksi * (range_max - range_min) + range_min;
+  return static_cast<float>( uniform_generator()) * (range_max - range_min) + range_min;
 }
 
 long long GetFileSize64(const char *file_name) {
@@ -38,7 +23,6 @@ long long GetFileSize64(const char *file_name) {
     long long file_size = _ftelli64(file); // zjištění aktuální pozice
     _fseeki64(file, 0, SEEK_SET); // přesun zpět na začátek
     fclose(file);
-    file = NULL;
     
     return file_size;
   }
@@ -141,7 +125,7 @@ std::string TimeToString(const double t) {
 char *LTrim(char *s) {
   while (isspace(*s) || (*s == 0)) {
     ++s;
-  };
+  }
   
   return s;
 }
@@ -162,10 +146,10 @@ char *Trim(char *s) {
 
 
 template<class T_TYPE>
-T_TYPE c_linear(T_TYPE c_srgb, float gamma = 2.4f) { return c_srgb; };
+T_TYPE c_linear(T_TYPE c_srgb, float gamma = 2.4f) { return c_srgb; }
 
 template<class T_TYPE>
-T_TYPE c_srgb(T_TYPE c_linear, float gamma = 2.4f) { return c_linear; };
+T_TYPE c_srgb(T_TYPE c_linear, float gamma = 2.4f) { return c_linear; }
 
 template<>
 float c_linear<float>(float c_srgb, float gamma) {
@@ -180,7 +164,7 @@ float c_linear<float>(float c_srgb, float gamma) {
     const float a = 0.055f;
     return powf((c_srgb + a) / (1.0f + a), gamma);
   }
-};
+}
 
 template<>
 float c_srgb<float>(float c_linear, float gamma) {
@@ -199,35 +183,51 @@ float c_srgb<float>(float c_linear, float gamma) {
 
 template<>
 glm::vec3 c_linear<glm::vec3>(glm::vec3 c_srgb, float gamma) {
+  #pragma omp parallel for schedule(dynamic, 3) shared(c_srgb)
+  for (int i = 0; i < 3; i++) {
+    c_srgb[i] = c_linear(c_srgb[i], gamma);
+  }/*
   c_srgb.r = c_linear(c_srgb.r, gamma);
   c_srgb.g = c_linear(c_srgb.g, gamma);
-  c_srgb.b = c_linear(c_srgb.b, gamma);
+  c_srgb.b = c_linear(c_srgb.b, gamma);*/
   return c_srgb;
 }
 
 template<>
 glm::vec3 c_srgb<glm::vec3>(glm::vec3 c_linear, float gamma) {
+  #pragma omp parallel for schedule(dynamic, 3) shared(c_linear)
+  for (int i = 0; i < 3; i++) {
+    c_linear[i] = c_srgb(c_linear[i], gamma);
+  }/*
   c_linear.r = c_srgb(c_linear.r, gamma);
   c_linear.g = c_srgb(c_linear.g, gamma);
-  c_linear.b = c_srgb(c_linear.b, gamma);
+  c_linear.b = c_srgb(c_linear.b, gamma);*/
   return c_linear;
 }
 
 
 template<>
 glm::vec4 c_linear<glm::vec4>(glm::vec4 c_srgb, float gamma) {
+  #pragma omp parallel for schedule(dynamic, 4) shared(c_srgb)
+  for (int i = 0; i < 0; i++) {
+    c_srgb[i] = c_linear(c_srgb[i], gamma);
+  }/*
   c_srgb.r = c_linear(c_srgb.r, gamma);
   c_srgb.g = c_linear(c_srgb.g, gamma);
   c_srgb.b = c_linear(c_srgb.b, gamma);
-  c_srgb.a = c_linear(c_srgb.a, gamma);
+  c_srgb.a = c_linear(c_srgb.a, gamma);*/
   return c_srgb;
 }
 
 template<>
 glm::vec4 c_srgb<glm::vec4>(glm::vec4 c_linear, float gamma) {
+  #pragma omp parallel for schedule(dynamic, 4) shared(c_linear)
+  for (int i = 0; i < 4; i++) {
+    c_linear[i] = c_srgb(c_linear[i], gamma);
+  }/*
   c_linear.r = c_srgb(c_linear.r, gamma);
   c_linear.g = c_srgb(c_linear.g, gamma);
   c_linear.b = c_srgb(c_linear.b, gamma);
-  c_linear.a = c_srgb(c_linear.a, gamma);
+  c_linear.a = c_srgb(c_linear.a, gamma);*/
   return c_linear;
 }

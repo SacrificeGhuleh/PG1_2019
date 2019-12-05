@@ -18,7 +18,7 @@ public:
   static float specularStrength_;
   static float ambientValue_;
   
-  virtual Color4f traceRay(const RtcRayHitIor &rayHit, int depth = 0) override;
+  Color4f traceRay(const RtcRayHitIor &rayHit, int depth = 0) override;
 };
 
 

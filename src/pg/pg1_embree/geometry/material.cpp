@@ -1,5 +1,6 @@
 #include <stdafx.h>
 #include <geometry/material.h>
+#include <utils/utils.h>
 
 const char Material::kDiffuseMapSlot = 0;
 const char Material::kSpecularMapSlot = 1;
@@ -13,6 +14,8 @@ Material::Material() {
   specular = Vector3(0.8f, 0.8f, 0.8f);
   
   emission = Vector3(0.0f, 0.0f, 0.0f);
+  
+  absorption = Vector3(0.f, 0.f, 0.f);
   
   reflectivity = static_cast<float>( 0.99 );
   shininess = 1;
@@ -30,7 +33,7 @@ Material::Material(std::string &name, const Vector3 &ambient, const Vector3 &dif
   name_ = name;
   
   this->ambient = ambient;
-  this->diffuse = diffuse;
+  this->diffuse = c_linear(diffuse);
   this->specular = specular;
   
   this->emission = emission;
@@ -43,6 +46,8 @@ Material::Material(std::string &name, const Vector3 &ambient, const Vector3 &dif
   if (textures) {
     memcpy(textures_, textures, sizeof(textures) * no_textures);
   }
+  
+  shadingType = ShadingType::None;
 }
 
 Material::~Material() {
@@ -50,7 +55,7 @@ Material::~Material() {
     if (textures_[i]) {
       delete[] textures_[i];
       textures_[i] = nullptr;
-    };
+    }
   }
 }
 

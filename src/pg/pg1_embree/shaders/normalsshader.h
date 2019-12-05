@@ -8,12 +8,12 @@
 #include <shaders/shader.h>
 #include <stdafx.h>
 
-class NormalsShader : public Shader{
+class NormalsShader : public Shader {
 public:
   NormalsShader(Camera *camera, Light *light, RTCScene *rtcscene, std::vector<Surface *> *surfaces,
                 std::vector<Material *> *materials);
-
-  virtual Color4f traceRay(const RtcRayHitIor &rayHit, int depth = 0) override;
+  
+  Color4f traceRay(const RtcRayHitIor &rayHit, int depth = 0) override;
 };
 
 

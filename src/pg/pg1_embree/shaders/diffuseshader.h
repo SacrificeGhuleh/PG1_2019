@@ -8,10 +8,10 @@
 #include <shaders/shader.h>
 #include <stdafx.h>
 
-class DiffuseShader : public Shader{
+class DiffuseShader : public Shader {
 public:
-  virtual Color4f traceRay(const RtcRayHitIor &rayHit, int depth = 0) override;
-
+  Color4f traceRay(const RtcRayHitIor &rayHit, int depth = 0) override;
+  
   DiffuseShader(Camera *camera, Light *light, RTCScene *rtcscene, std::vector<Surface *> *surfaces,
                 std::vector<Material *> *materials);
 };

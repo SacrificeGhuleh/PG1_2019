@@ -3,6 +3,7 @@
 
 #include <math/vector.h>
 #include <geometry/texture.h>
+#include <shaders/shadingtype.h>
 
 /*! \def NO_TEXTURES
 \brief Maximální počet textur přiřazených materiálu.
@@ -54,9 +55,9 @@ public:
   \param no_textures délka pole \a textures. Maximálně \a NO_TEXTURES - 1.
   */
   Material(std::string &name, const Vector3 &ambient, const Vector3 &diffuse,
-           const Vector3 &specular, const Vector3 &emission, const float reflectivity,
-           const float shininess, const float ior,
-           Texture **textures = NULL, const int no_textures = 0);
+           const Vector3 &specular, const Vector3 &emission, float reflectivity,
+           float shininess, float ior,
+           Texture **textures = nullptr, int no_textures = 0);
   
   //! Destruktor.
   /*!
@@ -83,14 +84,14 @@ public:
   \param slot číslo slotu, do kterého bude textura přiřazena. Maximálně \a NO_TEXTURES - 1.
   \param texture ukazatel na texturu.
   */
-  void set_texture(const int slot, Texture *texture);
+  void set_texture(int slot, Texture *texture);
   
   //! Vrátí texturu.
   /*!
   \param slot číslo slotu textury. Maximálně \a NO_TEXTURES - 1.
   \return Ukazatel na zvolenou texturu.
   */
-  Texture *get_texture(const int slot) const;
+  Texture *get_texture(int slot) const;
 
 public:
   Vector3 ambient; /*!< RGB barva prostředí \f$\left<0, 1\right>^3\f$. */
@@ -99,10 +100,13 @@ public:
   
   Vector3 emission; /*!< RGB barva emise \f$\left<0, 1\right>^3\f$. */
   
+  Vector3 absorption; /*!< RGB absorpce, musi byt opacny k barve */
+  
   float shininess; /*!< Koeficient lesklosti (\f$\ge 0\f$). Čím je hodnota větší, tím se jeví povrch lesklejší. */
   
   float reflectivity; /*!< Koeficient odrazivosti. */
   float ior; /*!< Index lomu. */
+  ShadingType shadingType; /*!< ID shaderu. */
   
   static const char kDiffuseMapSlot; /*!< Číslo slotu difuzní textury. */
   static const char kSpecularMapSlot; /*!< Číslo slotu spekulární textury. */

@@ -14,11 +14,11 @@
 */
 class Texture {
 public:
-  Texture(const char *file_name);
+  explicit Texture(const char *file_name);
   
   ~Texture();
   
-  Color3f get_texel(const float u, const float v) const;
+  Color3f get_texel(float u, float v) const;
   
   unsigned int width() const;
   

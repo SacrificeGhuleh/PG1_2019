@@ -2,9 +2,6 @@
 // Created by zvone on 27-Sep-19.
 //
 
-#include <stdafx.h>
-#include <math/vector.h>
-#include <math/mymath.h>
 //
 ///* *****************************************************************************
 // * VECTOR 2

@@ -10,7 +10,24 @@
 
 struct RtcRayHitIor : RTCRayHit {
   float ior = IOR_AIR;
-  bool visualize = false;
+  
+  inline bool collided() const {return hit.geomID != RTC_INVALID_GEOMETRY_ID;}
+};
+
+struct RtcRayHitIor4 : RTCRayHit4 {
+  float ior[4] = {IOR_AIR, IOR_AIR, IOR_AIR, IOR_AIR};
+};
+
+struct RtcRayHitIor8 : RTCRayHit8 {
+  float ior[8] = {IOR_AIR, IOR_AIR, IOR_AIR, IOR_AIR,
+                  IOR_AIR, IOR_AIR, IOR_AIR, IOR_AIR};
+};
+
+struct RtcRayHitIor16 : RTCRayHit16 {
+  float ior[16] = {IOR_AIR, IOR_AIR, IOR_AIR, IOR_AIR,
+                   IOR_AIR, IOR_AIR, IOR_AIR, IOR_AIR,
+                   IOR_AIR, IOR_AIR, IOR_AIR, IOR_AIR,
+                   IOR_AIR, IOR_AIR, IOR_AIR, IOR_AIR};
 };
 
 #endif //PG1_2019_RtcRayHitIorIOR_H

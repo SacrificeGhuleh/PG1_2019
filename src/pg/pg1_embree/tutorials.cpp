@@ -1,5 +1,4 @@
 #include <stdafx.h>
-#include <tutorials.h>
 #include <engine/raytracer.h>
 #include <utils/structs.h>
 #include <geometry/texture.h>
@@ -14,17 +13,11 @@ void error_handler(void *user_ptr, const RTCError code, const char *str) {
     switch (code) {
       case RTC_ERROR_UNKNOWN: throw std::runtime_error("RTC_ERROR_UNKNOWN" + descr);
       case RTC_ERROR_INVALID_ARGUMENT: throw std::runtime_error("RTC_ERROR_INVALID_ARGUMENT" + descr);
-        break;
       case RTC_ERROR_INVALID_OPERATION: throw std::runtime_error("RTC_ERROR_INVALID_OPERATION" + descr);
-        break;
       case RTC_ERROR_OUT_OF_MEMORY: throw std::runtime_error("RTC_ERROR_OUT_OF_MEMORY" + descr);
-        break;
       case RTC_ERROR_UNSUPPORTED_CPU: throw std::runtime_error("RTC_ERROR_UNSUPPORTED_CPU" + descr);
-        break;
       case RTC_ERROR_CANCELLED: throw std::runtime_error("RTC_ERROR_CANCELLED" + descr);
-        break;
       default: throw std::runtime_error("invalid error code" + descr);
-        break;
     }
   }
 }
@@ -163,7 +156,7 @@ int generate_and_trace_ray(RTCScene &scene) {
 int tutorial_1(const char *config) {
   RTCDevice device = rtcNewDevice(config);
   error_handler(nullptr, rtcGetDeviceError(device), "Unable to create a new device.\n");
-  rtcSetDeviceErrorFunction(device, error_handler, nullptr);
+  rtcSetDeviceErrorFunction(device, static_cast<RTCErrorFunction>(error_handler), nullptr);
   
   ssize_t triangle_supported = rtcGetDeviceProperty(device, RTC_DEVICE_PROPERTY_TRIANGLE_GEOMETRY_SUPPORTED);
   
@@ -238,6 +231,21 @@ int staticSceneSphere(const char *config) {
   return EXIT_SUCCESS;
 }
 
+int staticSceneGeoSpheres(const char *config) {
+  Raytracer raytracer(
+      640,
+      480,
+      deg2rad(45.0),
+      Vector3(0, -1, 20),
+      Vector3(0, 0, 0),
+      config);
+  
+  raytracer.LoadScene("data/geospheres_5x5.obj");
+  raytracer.MainLoop();
+  
+  return EXIT_SUCCESS;
+}
+
 int staticSceneShip(const char *config) {
   Raytracer raytracer(
       640,
@@ -249,6 +257,23 @@ int staticSceneShip(const char *config) {
   
   
   raytracer.LoadScene("data/6887_allied_avenger.obj");
+  raytracer.MainLoop();
+  
+  return EXIT_SUCCESS;
+}
+
+
+int staticSceneCornellbox(const char *config = "threads=0,verbose=0"){
+  Raytracer raytracer(
+      320,
+      240,
+      deg2rad(40.0),
+      Vector3(40, -940, 250),
+      Vector3(0, 0, 250),
+      config);
+  
+  
+  raytracer.LoadScene("data/cornell_box2.obj");
   raytracer.MainLoop();
   
   return EXIT_SUCCESS;

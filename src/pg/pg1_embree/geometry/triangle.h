@@ -18,7 +18,7 @@ public:
   /*!
   Inicializuje všechny složky trojúhelníku na hodnotu nula.
   */
-  Triangle() {}
+  Triangle() = default;
   
   //! Obecný konstruktor.
   /*!
@@ -29,7 +29,7 @@ public:
   \param v2 třetí vrchol trojúhelníka.
   \param surface ukazatel na plochu, jíž je trojúhelník členem.
   */
-  Triangle(const Vertex &v0, const Vertex &v1, const Vertex &v2, Surface *surface = NULL);
+  Triangle(const Vertex &v0, const Vertex &v1, const Vertex &v2, Surface *surface = nullptr);
   
   //! I-tý vrchol trojúhelníka.
   /*!
@@ -37,7 +37,7 @@ public:
 
   \return I-tý vrchol trojúhelníka.
   */
-  Vertex vertex(const int i);
+  Vertex vertex(int i);
   
   //! Ukazatel na síť, jíž je trojúhelník členem.
   /*!
