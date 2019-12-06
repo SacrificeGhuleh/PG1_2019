@@ -13,6 +13,7 @@
 #include <engine/camera.h>
 
 #include <geometry/material.h>
+#include <utils/utils.h>
 
 
 CommonShader::CommonShader(Camera *camera,
@@ -44,8 +45,12 @@ Color4f CommonShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
   //sum results
   Vector3 resultColor(0, 0, 0);
   
+  if (depth <= 0) {
+    resultColor = traceMaterial<ShadingType::Phong>(rayHit, material, tex_coord, normal, worldPos, depth);
+    Color4f(resultColor, 1.0f);
+  }
+  
   switch (material->shadingType) {
-    
     case ShadingType::None: {
       resultColor = traceMaterial<ShadingType::None>(rayHit, material, tex_coord, normal, worldPos, depth);
       break;
@@ -67,6 +72,10 @@ Color4f CommonShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
       resultColor = traceMaterial<ShadingType::Phong>(rayHit, material, tex_coord, normal, worldPos, depth);
       break;
     }
+    case ShadingType::PathTracing: {
+      resultColor = traceMaterial<ShadingType::PathTracing>(rayHit, material, tex_coord, normal, worldPos, depth);
+      break;
+    }
   }
   
   return Color4f(resultColor, 1.0f);
@@ -82,6 +91,27 @@ Color4f CommonShader::traceMaterial(
     int depth) {
   std::cout << "Warning, no material\n";
   return Color4f(1, 0, 1, 1);
+}
+
+glm::vec3 CommonShader::hemisphereSampling(glm::vec3 normal, float &pdf) {
+  const float M_2PI = 2.f * M_PI;
+  const float randomU = Random();
+  const float randomV = Random();
+  
+  const float x = 2.f * cosf(M_2PI * randomU) * sqrtf(randomV * (1.f - randomV));
+  const float y = 2.f * sinf(M_2PI * randomU) * sqrtf(randomV * (1.f - randomV));
+  const float z = 1.f - 2.f * randomV;
+  
+  Vector3 omegaI = glm::normalize(Vector3(x, y, z));
+  
+  if (glm::dot(omegaI, normal) < 0) {
+//    omegaI *= -1;
+    omegaI = -omegaI;
+  }
+  const float pdfConst = 1. / 2. * M_PI;
+  pdf = pdfConst;
+  
+  return omegaI;
 }
 
 template<>
@@ -203,13 +233,35 @@ Color4f CommonShader::traceMaterial<ShadingType::Lambert>(
 
 template<>
 Color4f CommonShader::traceMaterial<ShadingType::Mirror>(
+    
     const RtcRayHitIor &rayHit,
     const Material *material,
     const Coord2f &tex_coord,
     const glm::vec3 &normal,
     const glm::vec3 &worldPos,
     int depth) {
-  return Color4f(0.f, 1.f, 1.f, 1.f);
+  
+  Color4f reflected(0.f, 0.f, 0.f, 1.f);
+  return reflected;
+  glm::vec3 normalForMirror = glm::normalize(normal);
+  const glm::vec3 rayDirection(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
+  const glm::vec3 rayToObserver = -rayDirection;
+  
+  //cos1
+  float Q1 = glm::dot(normalForMirror, rayToObserver);
+  
+  if (Q1 < 0) {
+    normalForMirror = -normalForMirror;
+    Q1 = glm::dot(normalForMirror, rayToObserver);
+  }
+  assert(Q1 >= 0);
+  
+  const glm::vec3 reflectDir = glm::normalize(
+      (2.f * (rayToObserver * normalForMirror)) * normalForMirror - rayToObserver);
+  
+  RtcRayHitIor reflectedRayHit = generateRay(worldPos, reflectDir, tNear_);
+  
+  return traceRay(reflectedRayHit, depth - 1);
 }
 
 template<>
@@ -256,4 +308,39 @@ Color4f CommonShader::traceMaterial<ShadingType::Phong>(
       (ambient.y + (shadowVal * diffuse.y) + specular.y),
       (ambient.z + (shadowVal * diffuse.z) + specular.z),
       1);
+}
+
+template<>
+Color4f CommonShader::traceMaterial<ShadingType::PathTracing>(
+    const RtcRayHitIor &rayHit,
+    const Material *material,
+    const Coord2f &tex_coord,
+    const glm::vec3 &normal,
+    const glm::vec3 &worldPos,
+    int depth) {
+  
+  const Color4f emmision = Color4f{material->emission.x, material->emission.y, material->emission.z, 1};
+  if (emmision.r != 0 && emmision.g != 0 && emmision.b != 0) {
+    return emmision;
+  }
+  
+  const Vector3 rayDir = Vector3(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
+  const Vector3 rayView = Vector3(-rayDir.x, -rayDir.y, -rayDir.z);
+  
+  float pdf;
+  const Vector3 omegaI = hemisphereSampling(normal, pdf);
+  
+  const RtcRayHitIor rayHitNew = generateRay(worldPos, omegaI);
+  
+  const Color4f reflColor = traceRay(rayHitNew, depth - 1);
+  
+  const Vector3 fR = material->diffuse * glm::vec3(1. / M_PI);
+  
+  //float shadowVal = shadow(worldPos, lightDir, glm::l2Norm(light_->getPosition()));
+  
+  return Color4f(
+      glm::vec3(reflColor.x, reflColor.y, reflColor.z) *
+      glm::dot(normal, omegaI)*
+      material->diffuse,
+      1); // Jitted ray dir
 }

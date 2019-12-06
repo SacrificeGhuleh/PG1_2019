@@ -121,9 +121,9 @@ set(SHADERS
     src/pg/pg1_embree/shaders/recursivephongshader.cpp
     src/pg/pg1_embree/shaders/recursivephongshader.h
     src/pg/pg1_embree/shaders/glassshader.cpp
-    src/pg/pg1_embree/shaders/glassshader.h 
-	src/pg/pg1_embree/shaders/commonshader.cpp 
-	src/pg/pg1_embree/shaders/commonshader.h)
+    src/pg/pg1_embree/shaders/glassshader.h
+    src/pg/pg1_embree/shaders/commonshader.cpp
+    src/pg/pg1_embree/shaders/commonshader.h)
 
 set(UTILS
     src/pg/pg1_embree/utils/structs.h
@@ -138,11 +138,11 @@ set(SRC
     src/pg/pg1_embree/tutorials.h
     src/pg/pg1_embree/stdafx.cpp)
 
-set (TESTS
-     src/pg/pg1_embree/tests/test.h 
-	 src/pg/pg1_embree/shaders/shadingtype.h 
-	 src/pg/pg1_embree/shaders/pathtracingshader.cpp 
-	 src/pg/pg1_embree/shaders/pathtracingshader.h)
+set(TESTS
+    src/pg/pg1_embree/tests/test.h
+    src/pg/pg1_embree/shaders/shadingtype.h
+    src/pg/pg1_embree/shaders/pathtracingshader.cpp
+    src/pg/pg1_embree/shaders/pathtracingshader.h)
 
 add_executable(${PROJECT_NAME} ${SRC} ${UTILS} ${SHADERS} ${MATH} ${GEOMETRY} ${ENGINE} ${TESTS} ${IMGUI} ${PCH})
 
@@ -154,4 +154,14 @@ else ()
   target_link_libraries(${PROJECT_NAME} ${EMBREE_LIBRARY} D3DCompiler d3d11 libfreeimage xinput)
 endif ()
 
-file(COPY data DESTINATION ${CMAKE_BINARY_DIR})
+
+add_custom_command(
+  TARGET ${PROJECT_NAME} POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E remove_directory
+  ${CMAKE_CURRENT_BINARY_DIR}/data/)
+
+add_custom_command(
+  TARGET ${PROJECT_NAME} POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+  ${CMAKE_SOURCE_DIR}/data/
+  ${CMAKE_CURRENT_BINARY_DIR}/data/)

@@ -94,14 +94,17 @@ Color4f PathTracingShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
   
   Color4f reflColor = traceRay(rayHitNew);
   Vector3 fR = material->diffuse * glm::vec3(1. / M_PI);
-  return Color4f(glm::vec3(reflColor.x, reflColor.y, reflColor.z) * glm::dot(normal, omegaI) * (float)M_PI * pdf, 1); // Jitted ray dir
-  Vector3 resultColor = glm::vec3(reflColor.x, reflColor.y, reflColor.z) * fR * (glm::dot(normal, omegaI)) / (pdf);
-  return Color4f(resultColor, 1);
+  return Color4f(
+      glm::vec3(reflColor.x, reflColor.y, reflColor.z) *
+      glm::dot(normal, omegaI) *
+      (float) M_PI *
+      pdf,
+      1); // Jitted ray dir
+  
 }
 
 
 glm::vec3 PathTracingShader::hemisphereSampling(glm::vec3 normal, float &pdf) {
-  
   const float M_2PI = 2.f * M_PI;
   const float randomU = Random();
   const float randomV = Random();

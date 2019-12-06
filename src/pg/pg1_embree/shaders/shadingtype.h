@@ -8,8 +8,9 @@
 
 enum class ShadingType {
   None = -1,
+  Lambert = 3,
   Glass = 4,
-  Lambert = 5,
+  PathTracing = 5,
   Mirror = 6,
   Phong = 7
 };
@@ -18,10 +19,13 @@ enum class ShadingType {
 inline bool isShadingType(int type) {
   if (type < 0) return false;
   
+  if (type == static_cast<int>(ShadingType::Lambert))
+    return true;
+  
   if (type == static_cast<int>(ShadingType::Glass))
     return true;
   
-  if (type == static_cast<int>(ShadingType::Lambert))
+  if (type == static_cast<int>(ShadingType::PathTracing))
     return true;
   
   if (type == static_cast<int>(ShadingType::Mirror))
