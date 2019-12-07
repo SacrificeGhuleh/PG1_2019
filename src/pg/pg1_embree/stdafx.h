@@ -20,6 +20,7 @@
 #include <random>
 #include <functional>
 #include <iostream>
+#include <new>
 
 #include <xmmintrin.h>
 #include <pmmintrin.h>
@@ -40,4 +41,16 @@
 //glm includes
 #include <glm/geometric.hpp>
 #include <glm/gtx/norm.hpp>
+
 #endif
+
+static uint32_t totalAllocations = 0;
+static uint32_t totalDelete = 0;
+
+void *operator new(size_t size);
+
+void operator delete(void *p);
+
+#define LOG(message) std::cerr << "[" << __PRETTY_FUNCTION__ << "] - " << message << std::endl
+
+// LOG can now be used to produce a log message that includes the file in which the log occurrred

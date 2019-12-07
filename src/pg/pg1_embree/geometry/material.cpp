@@ -51,6 +51,7 @@ Material::Material(std::string &name, const Vector3 &ambient, const Vector3 &dif
 }
 
 Material::~Material() {
+  LOG("Destructor called");
   for (int i = 0; i < NO_TEXTURES; ++i) {
     if (textures_[i]) {
       delete[] textures_[i];

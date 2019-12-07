@@ -21,11 +21,16 @@ class Light;
 */
 class Raytracer : public SimpleGuiDX11 {
 public:
-  Raytracer(int width, int height,
-            float fov_y, Vector3 view_from, Vector3 view_at,
+  Raytracer(int width,
+            int height,
+            float fov_y,
+            Vector3 view_from,
+            Vector3 view_at,
+            Vector3 lightPos,
+            Vector3 lightColor,
             const char *config = "threads=0,verbose=3");
   
-  ~Raytracer();
+  virtual ~Raytracer();
   
   int InitDeviceAndScene(const char *config);
   

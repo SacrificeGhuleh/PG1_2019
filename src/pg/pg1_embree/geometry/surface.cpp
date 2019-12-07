@@ -34,6 +34,7 @@ Surface::Surface(const std::string &name, const int n) {
 }
 
 Surface::~Surface() {
+  LOG("Destructor called");
   if (triangles_) {
     delete[] triangles_;
     triangles_ = nullptr;

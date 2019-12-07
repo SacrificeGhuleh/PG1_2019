@@ -54,6 +54,7 @@ int SimpleGuiDX11::Init() {
 }
 
 SimpleGuiDX11::~SimpleGuiDX11() {
+  LOG("Destructor called");
   Cleanup();
   
   delete[] tex_data_;

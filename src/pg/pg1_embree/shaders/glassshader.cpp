@@ -92,8 +92,8 @@ Color4f GlassShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
   if (n1 != IOR_AIR) {
     n2 = IOR_AIR;
   }
-
-  if(n1 < 0 || n2 < 0){
+  
+  if (n1 < 0 || n2 < 0) {
     n1 = n2 = 1.f;
   }
   
@@ -135,17 +135,12 @@ Color4f GlassShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
   
   reflected = traceRay(reflectedRayHit, depth - 1);
   refracted = traceRay(refractedRayHit, depth - 1);
-
-//  Vector4 C = (coefReflect * reflected /** Vector4(diffuse, 1.f)*/) + (coefRefract * refracted /** Vector4(diffuse, 1.f)*/);
   
   assert(coefReflect >= 0.f);
   assert(coefReflect <= 1.f);
   
   assert(coefRefract >= 0.f);
   assert(coefRefract <= 1.f);
-
-//
-  Vector4 C = {0.f, 0.f, 0.f, 1.f};
   
   //C = [Crefl*R + Crefr*(1-R)] * TbeerLambert
   //TbeerLambert = {1,1,1} for air
@@ -155,32 +150,14 @@ Color4f GlassShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
     TBeerLambert = {1.f, 1.f, 1.f};
   } else {
     const float l = rayHit.ray.tfar;
-    const glm::vec3 M = {attenuation_, attenuation_, attenuation_};
+//    const glm::vec3 M = {attenuation_, attenuation_, attenuation_};
+    const glm::vec3 M = material->absorption;
     TBeerLambert = {
         exp(-M.r * l),
         exp(-M.g * l),
         exp(-M.b * l)
     };
   }
-  //TBeerLambert = {1, 1, 1};
+  return coefReflect * reflected + coefRefract * refracted * glm::vec4(TBeerLambert, 1.f);
   
-  if (addReflect_) {
-    C += coefReflect * reflected;
-    if (addDiffuseToReflect_) {
-      C += Vector4(diffuse, 1.f);
-    }
-  }
-  
-  if (addRefract_) {
-    C += coefRefract * refracted;
-    if (addDiffuseToRefract_) {
-      C += Vector4(diffuse, 1.f);
-    }
-  }
-  
-  if (addAttenuation) {
-    C *= glm::vec4(TBeerLambert, 1.f);
-  }
-  
-  return C;
 }

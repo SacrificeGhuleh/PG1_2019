@@ -11,6 +11,8 @@
 class Light {
 public:
   Light(const Vector3 &position, const Vector3 &color) : position_{position}, color_{color} {}
+  
+  virtual ~Light();
 
 private:
   Vector3 position_;

@@ -21,8 +21,13 @@
 #include <shaders/commonshader.h>
 #include <shaders/pathtracingshader.h>
 
-Raytracer::Raytracer(const int width, const int height,
-                     const float fov_y, const Vector3 view_from, const Vector3 view_at,
+Raytracer::Raytracer(const int width,
+                     const int height,
+                     const float fov_y,
+                     const Vector3 view_from,
+                     const Vector3 view_at,
+                     const Vector3 lightPos,
+                     const Vector3 lightColor,
                      const char *config) :
     SimpleGuiDX11(width, height) {
   InitDeviceAndScene(config);
@@ -36,7 +41,7 @@ Raytracer::Raytracer(const int width, const int height,
   
   defaultBgColor_ = Color4f(1.0f, 0.0f, 1.0f, 1.0f);
   
-  light_ = new Light(Vector3(200, 300, 400), Vector3(1.f));
+  light_ = new Light(lightPos, lightColor);
 
 //  sphericalMap_ = new SphericalMap("data/venice_sunset.jpg");
   sphericalMap_ = new SphericalMap("data/field.jpg");
@@ -109,9 +114,13 @@ Raytracer::Raytracer(const int width, const int height,
 }
 
 Raytracer::~Raytracer() {
+  LOG("Destructor called");
   for (auto shader : shaders_) {
     SAFE_DELETE(shader);
   }
+  SAFE_DELETE(light_);
+  SAFE_DELETE(sphericalMap_);
+  
   ReleaseDeviceAndScene();
 }
 
@@ -203,7 +212,6 @@ Color4f Raytracer::get_pixel(const int x, const int y, const float t) {
   return (shaders_[static_cast<int>(activeShader_)]->getPixel(x, y));
 }
 
-
 std::array<Color4f, 4> Raytracer::get_pixel4(int x, int y, float t) {
   return shaders_[static_cast<int>(activeShader_)]->getPixel4(x, y);
 }
@@ -253,22 +261,23 @@ int Raytracer::Ui() {
     
     ImGui::Combo("Selected Shader", reinterpret_cast<int *>(&activeShader_), shaderNames,
                  static_cast<int>(ShaderEnum::ShadersCount));
-    
-    ImGui::Combo("Selected Multiray", reinterpret_cast<int *>(&multiRay_), multiRayNames,
-                 4);
-    
-    ImGui::Checkbox("Flip texture U", &Shader::flipTextureU_);
-    ImGui::Checkbox("Flip texture V", &Shader::flipTextureV_);
+
+//    ImGui::Combo("Selected Multiray", reinterpret_cast<int *>(&multiRay_), multiRayNames,
+//                 4);
+
+//    ImGui::Checkbox("Flip texture U", &Shader::flipTextureU_);
+//    ImGui::Checkbox("Flip texture V", &Shader::flipTextureV_);
     ImGui::Checkbox("Sphere map", &Shader::sphereMap_);
     
     ImGui::Checkbox("Supersampling", &Shader::supersampling_);
-    
-    ImGui::SliderFloat("Ray near", &Shader::tNear_, 0, 0.5f);
     
     if (Shader::supersampling_) {
       ImGui::Checkbox("Rand supersampling", &Shader::supersamplingRandom_);
       ImGui::SliderInt("Samples", &Shader::samplingSize_, 1, 10);
     }
+    
+    ImGui::SliderFloat("Ray near", &Shader::tNear_, 0, 0.5f);
+    
     
     ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
     switch (activeShader_) {

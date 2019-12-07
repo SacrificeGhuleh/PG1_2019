@@ -16,11 +16,12 @@ class SphericalMap {
 public:
   explicit SphericalMap(const std::string& filename);
   
+  virtual ~SphericalMap();
+  
   Color3f texel(const Vector3 &pos);
 
 private:
   std::unique_ptr<Texture> texture_;
-  //Texture *texture_;
 };
 
 

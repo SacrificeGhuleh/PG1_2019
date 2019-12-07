@@ -10,7 +10,7 @@ class SimpleGuiDX11 {
 public:
   SimpleGuiDX11(int width, int height);
   
-  ~SimpleGuiDX11();
+  virtual ~SimpleGuiDX11();
   
   int MainLoop();
   

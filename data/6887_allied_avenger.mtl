@@ -10,6 +10,8 @@ newmtl black_plastic
 	Ka 0.03 0.03 0.03
 	Kd 0.3 0.3 0.3
 	Ks 1.0 1.0 1.0
+	Kabs 10.0 10.0 10.0
+	ior 1.460
 	shader 7
         
 newmtl green_plastic_transparent

@@ -2,6 +2,7 @@
 // Created by zvone on 03-Oct-19.
 //
 
+#include <stdafx.h>
 #include <memory>
 #include <cassert>
 
@@ -10,7 +11,7 @@
 #include <math/mymath.h>
 #include <geometry/texture.h>
 
-SphericalMap::SphericalMap(const std::string& filename) {
+SphericalMap::SphericalMap(const std::string &filename) {
   texture_ = std::make_unique<Texture>(filename.c_str());
 //  texture_ = new Texture(filename.c_str());
   assert(texture_->height() != 0);
@@ -26,4 +27,8 @@ Color3f SphericalMap::texel(const Vector3 &pos) {
   
   return texture_->get_texel(u, v);
 //  return Color3f(0, 1, 0);
+}
+
+SphericalMap::~SphericalMap() {
+  LOG("Destructor called");
 }

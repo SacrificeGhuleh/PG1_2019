@@ -17,6 +17,8 @@ public:
   Camera(int width, int height, float fov_y,
          const Vector3 &view_from, Vector3 view_at);
   
+  virtual ~Camera();
+  
   /* generate primary ray, top-left pixel image coordinates (xi, yi) are in the range <0, 1) x <0, 1) */
   RTCRay GenerateRay(const float xi, const float yi);
   

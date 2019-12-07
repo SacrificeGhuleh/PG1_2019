@@ -7,7 +7,6 @@
 
 
 #include <shaders/shader.h>
-#include <stdafx.h>
 
 class RecursivePhongShader : public Shader {
 public:

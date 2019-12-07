@@ -6,7 +6,6 @@
 #define PG1_2019_DIFFUSESHADER_H
 
 #include <shaders/shader.h>
-#include <stdafx.h>
 
 class DiffuseShader : public Shader {
 public:

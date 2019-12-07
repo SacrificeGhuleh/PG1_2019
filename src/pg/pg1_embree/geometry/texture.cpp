@@ -93,6 +93,7 @@ Texture::Texture(const char *file_name) {
 }
 
 Texture::~Texture() {
+  LOG("Destructor called");
   if (data_) {
     // free FreeImage's copy of the data
     delete[] data_;

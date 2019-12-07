@@ -88,3 +88,7 @@ const Vector3 Camera::getRayDirection(const float x_i, const float y_i) {
   dc = glm::normalize(dc);
   return getMCW() * dc;
 }
+
+Camera::~Camera() {
+  LOG("Destructor called");
+}

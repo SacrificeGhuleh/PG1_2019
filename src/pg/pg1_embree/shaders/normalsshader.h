@@ -6,7 +6,6 @@
 #define PG1_2019_NORMALSSHADER_H
 
 #include <shaders/shader.h>
-#include <stdafx.h>
 
 class NormalsShader : public Shader {
 public:
