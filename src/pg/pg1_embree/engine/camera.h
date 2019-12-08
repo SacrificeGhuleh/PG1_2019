@@ -43,12 +43,12 @@ public:
   
   Vector3 view_from_{}; // ray origin or eye or O
   float f_y_{1.0f}; // focal lenght (px)
+  Vector3 view_at_{}; // target T
 private:
-  int width_{640}; // image width (px)
   
+  int width_{640}; // image width (px)
   int height_{480};  // image height (px)
   float fov_y_{0.785f}; // vertical field of view (rad)
-  Vector3 view_at_{}; // target T
   
   Vector3 up_{Vector3(0.0f, 0.0f, 1.0f)}; // up vector
   

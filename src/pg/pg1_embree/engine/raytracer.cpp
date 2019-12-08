@@ -276,24 +276,29 @@ int Raytracer::Ui() {
         int traces = shader_->pathTracerHelper->getTracesCount();
         ImGui::Text("Samples total = %zu", traces);
         
-        std::string filename = std::string("out/path tracing - samples ");
-        filename.append(std::to_string(traces));
-        filename.append(".png");
+        static bool saveToFile = false;
         
-        if (traces > 0 && traces < 100) {
-          if (traces % 10 == 0 && lastSaved < traces) {
-            saveImage(filename);
-          }
-        } else if (traces < 1000) {
-          if (traces % 100 == 0 && lastSaved < traces) {
-            saveImage(filename);
-          }
-        } else {
-          if (traces % 1000 == 0 && lastSaved < traces) {
-            saveImage(filename);
+        ImGui::Checkbox("Save to file", &saveToFile);
+        
+        if (saveToFile) {
+          std::string filename = std::string("out/path tracing - samples ");
+          filename.append(std::to_string(traces));
+          filename.append(".png");
+          
+          if (traces > 0 && traces < 100) {
+            if (traces % 10 == 0 && lastSaved < traces) {
+              saveImage(filename);
+            }
+          } else if (traces < 1000) {
+            if (traces % 100 == 0 && lastSaved < traces) {
+              saveImage(filename);
+            }
+          } else {
+            if (traces % 1000 == 0 && lastSaved < traces) {
+              saveImage(filename);
+            }
           }
         }
-        
         break;
       }
     }
@@ -317,15 +322,34 @@ int Raytracer::Ui() {
   
   if (ImGui::CollapsingHeader("Camera", true)) {
     ImGui::Text("Camera position");
-    ImGui::SliderFloat("X", &camera_.view_from_.x, -100.0f, 100.0f);
-    ImGui::SliderFloat("Y", &camera_.view_from_.y, -100.0f, 100.0f);
-    ImGui::SliderFloat("Z", &camera_.view_from_.z, -100.0f, 100.0f);
+//    ImGui::SliderFloat("X", &camera_.view_from_.x, -100.0f, 100.0f);
+//    ImGui::SliderFloat("Y", &camera_.view_from_.y, -100.0f, 100.0f);
+//    ImGui::SliderFloat("Z", &camera_.view_from_.z, -100.0f, 100.0f);
+  
+    ImGui::DragFloat("X##1", &camera_.view_from_.x);
+    ImGui::DragFloat("Y##1", &camera_.view_from_.y);
+    ImGui::DragFloat("Z##1", &camera_.view_from_.z);
+    
+    ImGui::Text("View at");
+    ImGui::DragFloat("X##2", &camera_.view_at_.x);
+    ImGui::DragFloat("Y##2", &camera_.view_at_.y);
+    ImGui::DragFloat("Z##2", &camera_.view_at_.z);
   }
   
   static bool show_demo = false;
   ImGui::Separator();
-  if (ImGui::Checkbox("Show demo window", &show_demo))
+  ImGui::Checkbox("Show demo window", &show_demo);
+  if (show_demo)
     ImGui::ShowDemoWindow(nullptr);
+  
+  static char buf[128] = "out/render.png";
+  ImGui::InputText("Filename", buf, IM_ARRAYSIZE(buf));
+  
+  bool save = ImGui::Button("Save current render");
+  
+  if (save) {
+    saveImage(buf);
+  }
   
   ImGui::End();
   return 0;
@@ -344,7 +368,6 @@ void Raytracer::saveImage(const std::string &filename) {
         writeArray[offset + 1] = tex_data_[offset + 1] * 255;
         writeArray[offset + 2] = tex_data_[offset + 2] * 255;
         writeArray[offset + 3] = tex_data_[offset + 3] * 255;
-        
       }
     }
     
