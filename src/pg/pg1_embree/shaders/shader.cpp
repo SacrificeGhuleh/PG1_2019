@@ -182,7 +182,7 @@ Color4f Shader::getPixel(const int x, const int y) {
     if (supersamplingRandom_) {
       float offsetX = Random(-0.5f, 0.5f);
       float offsetY = Random(-0.5f, 0.5f);
-      for (int i = 0; i < (samplingSize_ * samplingSize_) - 1; i++) {
+      for (int i = 0; i < (/*samplingSize_ * */samplingSize_) - 1; i++) {
         RtcRayHitIor ray = shootRay(static_cast<float>(x) + offsetX, static_cast<float>(y) + offsetY);
         finalColor += traceRay(ray, recursionDepth_);
       }
