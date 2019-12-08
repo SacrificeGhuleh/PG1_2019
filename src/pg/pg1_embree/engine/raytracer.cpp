@@ -276,6 +276,10 @@ int Raytracer::Ui() {
         int traces = shader_->pathTracerHelper->getTracesCount();
         ImGui::Text("Samples total = %zu", traces);
         
+        if (ImGui::Button("Reset")) {
+          shader_->pathTracerHelper->resetTraces();
+        }
+        
         static bool saveToFile = false;
         
         ImGui::Checkbox("Save to file", &saveToFile);
@@ -284,18 +288,19 @@ int Raytracer::Ui() {
           std::string filename = std::string("out/path tracing - samples ");
           filename.append(std::to_string(traces));
           filename.append(".png");
-          
-          if (traces > 0 && traces < 100) {
-            if (traces % 10 == 0 && lastSaved < traces) {
-              saveImage(filename);
-            }
-          } else if (traces < 1000) {
-            if (traces % 100 == 0 && lastSaved < traces) {
-              saveImage(filename);
-            }
-          } else {
-            if (traces % 1000 == 0 && lastSaved < traces) {
-              saveImage(filename);
+          if (traces > 0) {
+            if (traces < 100) {
+              if (traces % 10 == 0 && lastSaved < traces) {
+                saveImage(filename);
+              }
+            } else if (traces < 1000) {
+              if (traces % 100 == 0 && lastSaved < traces) {
+                saveImage(filename);
+              }
+            } else {
+              if (traces % 1000 == 0 && lastSaved < traces) {
+                saveImage(filename);
+              }
             }
           }
         }
@@ -325,7 +330,7 @@ int Raytracer::Ui() {
 //    ImGui::SliderFloat("X", &camera_.view_from_.x, -100.0f, 100.0f);
 //    ImGui::SliderFloat("Y", &camera_.view_from_.y, -100.0f, 100.0f);
 //    ImGui::SliderFloat("Z", &camera_.view_from_.z, -100.0f, 100.0f);
-  
+    
     ImGui::DragFloat("X##1", &camera_.view_from_.x);
     ImGui::DragFloat("Y##1", &camera_.view_from_.y);
     ImGui::DragFloat("Z##1", &camera_.view_from_.z);

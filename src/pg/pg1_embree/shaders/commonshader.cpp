@@ -261,21 +261,13 @@ Color4f CommonShader::traceMaterial<ShadingType::Mirror>(
     const glm::vec3 &normal,
     const glm::vec3 &worldPos,
     int depth) {
-  
-  //ambient
-  Vector3 ambient = material->ambient;
-  
-  //diffuse
   Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y, rayHit.ray.org_z);
   Vector3 direction(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
-//  Vector3 worldPos = origin + direction * rayHit.ray.tfar;
   Vector3 lightDir = light_->getPosition() - worldPos;
   glm::vec3 shaderNormal = glm::normalize(normal);
   
   lightDir = glm::normalize(lightDir);
-  
   float diff = glm::dot(normal, lightDir);
-  
   //Flip normal if invalid
   if (correctNormals_) {
     if (diff < 0) {
@@ -283,23 +275,15 @@ Color4f CommonShader::traceMaterial<ShadingType::Mirror>(
       diff *= -1.f;
     }
   }
-  
-  Vector3 diffuse = diff * getDiffuseColor(material, tex_coord);
-  
   //specular
   Vector3 viewDir = (origin - worldPos);
   viewDir = glm::normalize(viewDir);
-  Vector3 reflectDir = glm::reflect(normal, lightDir);
-  float spec = powf(glm::dot(viewDir, reflectDir), material->shininess);
-  Vector3 specular(spec);
+  Vector3 reflectDir = glm::reflect(normal, direction);
   
   Color4f reflected(0.f, 0.f, 0.f, 1.f);
   
   RtcRayHitIor reflectedRayHit = generateRay(worldPos, reflectDir, tNear_);
   reflected = traceRay(reflectedRayHit, depth - 1);
-  
-  //Vector4 C(diffuse + (specular * Vector3(reflected)), 1.0f);
-  //return C;
   return reflected;
 }
 
