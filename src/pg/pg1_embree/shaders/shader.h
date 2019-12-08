@@ -42,7 +42,7 @@ public:
   //Gets 4x4 pixels (4 height, 4 width)
   virtual std::array<Color4f, 16> getPixel16(int x, int y);
   
-  virtual Color4f traceRay(const RtcRayHitIor &rayHit, int depth = 0);
+  virtual Color4f traceRay(const RtcRayHitIor &rayHit, int depth );
   
   RtcRayHitIor shootRay(float x, float y);
   

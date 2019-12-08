@@ -12,7 +12,9 @@ enum class ShadingType {
   Glass = 4,
   PathTracing = 5,
   Mirror = 6,
-  Phong = 7
+  Phong = 7,
+  Normals = -2,
+  TexCoords = -3
 };
 
 

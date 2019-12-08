@@ -13,10 +13,12 @@ public:
   CommonShader(Camera *camera, Light *light, RTCScene *rtcScene, std::vector<Surface *> *surfaces,
                std::vector<Material *> *materials);
   
-  Color4f traceRay(const RtcRayHitIor &rayHit, int depth = Shader::recursionDepth_) override;
+  Color4f traceRay(const RtcRayHitIor &rayHit, int depth) override;
   
   glm::vec3 hemisphereSampling(glm::vec3 normal, float& pdf);
   
+  static float ior;
+  static ShadingType useShader;
 private:
   
   template<ShadingType T>
@@ -75,5 +77,21 @@ Color4f CommonShader::traceMaterial<ShadingType::PathTracing>(const RtcRayHitIor
                                                         const glm::vec3 &normal,
                                                         const glm::vec3 &worldPos,
                                                         int depth);
+
+template<>
+Color4f CommonShader::traceMaterial<ShadingType::Normals>(const RtcRayHitIor &rayHit,
+                                                              const Material *material,
+                                                              const Coord2f &tex_coord,
+                                                              const glm::vec3 &normal,
+                                                              const glm::vec3 &worldPos,
+                                                              int depth);
+
+template<>
+Color4f CommonShader::traceMaterial<ShadingType::TexCoords>(const RtcRayHitIor &rayHit,
+                                                              const Material *material,
+                                                              const Coord2f &tex_coord,
+                                                              const glm::vec3 &normal,
+                                                              const glm::vec3 &worldPos,
+                                                              int depth);
 
 #endif //PG1_2019_COMMONSHADER_H

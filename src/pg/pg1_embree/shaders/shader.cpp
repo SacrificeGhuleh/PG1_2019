@@ -16,13 +16,13 @@
 #include <utils/utils.h>
 
 bool Shader::flipTextureU_ = false;
-bool Shader::sphereMap_ = true;
+bool Shader::sphereMap_ = false;
 bool Shader::correctNormals_ = true;
 bool Shader::flipTextureV_ = true;
 bool Shader::supersampling_ = false;
 bool Shader::supersamplingRandom_ = false;
 int Shader::samplingSize_ = 3;
-int Shader::recursionDepth_ = 3;
+int Shader::recursionDepth_ = 10;
 float Shader::tNear_ = 0.01f;
 
 
@@ -205,7 +205,7 @@ Color4f Shader::getPixel(const int x, const int y) {
         offsetY += offsetAddition;
       }
     }
-    return finalColor / static_cast<float>(samplingSize_ * samplingSize_);
+    return finalColor /finalColor.a/*/ static_cast<float>(samplingSize_ * samplingSize_);*/;
 //
 //    std::array<float, 16> xPositions;
 //    std::array<float, 16> yPositions;
@@ -376,7 +376,7 @@ Color4f Shader::getBackgroundColor(const RtcRayHitIor &rayHit) {
     return Color4f(sphericalMap_->texel(rayDir), 1.0f);
   }
   
-  return *defaultBgColor_;
+  return Color4f((defaultBgColor_)->x, (defaultBgColor_)->y, (defaultBgColor_)->z, 0.0f);
 }
 
 RtcRayHitIor

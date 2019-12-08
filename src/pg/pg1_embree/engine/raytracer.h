@@ -72,4 +72,5 @@ private:
   bool phongSpecular_;
   Color4f defaultBgColor_;
   SphericalMap *sphericalMap_;
+  static int currentShadingIdx;
 };

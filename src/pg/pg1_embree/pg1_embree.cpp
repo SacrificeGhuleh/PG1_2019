@@ -12,7 +12,7 @@ int main() {
   
   try {
     //  return staticSceneSphere();
-    //  return staticSceneGeoSpheres();
+//      return staticSceneGeoSpheres();
     //  return staticSceneShip();
     staticSceneCornellbox();
   }

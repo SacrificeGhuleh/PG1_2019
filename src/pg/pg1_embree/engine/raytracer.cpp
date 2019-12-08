@@ -21,6 +21,9 @@
 #include <shaders/commonshader.h>
 #include <shaders/pathtracingshader.h>
 
+
+int Raytracer::currentShadingIdx = 0;
+
 Raytracer::Raytracer(const int width,
                      const int height,
                      const float fov_y,
@@ -39,7 +42,7 @@ Raytracer::Raytracer(const int width,
   ambientValue_ = 1.f;
   specularStrength_ = 1.f;
   
-  defaultBgColor_ = Color4f(1.0f, 0.0f, 1.0f, 1.0f);
+  defaultBgColor_ = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
   
   light_ = new Light(lightPos, lightColor);
 
@@ -209,41 +212,41 @@ void Raytracer::LoadScene(const std::string file_name) {
 }
 
 Color4f Raytracer::get_pixel(const int x, const int y, const float t) {
-  return (shaders_[static_cast<int>(activeShader_)]->getPixel(x, y));
+  if(x == 320/2 && y == 240/3*2){
+    (void)0;
+  }
+  return (shaders_[static_cast<int>(ShaderEnum::Common)]->getPixel(x, y));
+//  return (shaders_[static_cast<int>(activeShader_)]->getPixel(x, y));
 }
 
 std::array<Color4f, 4> Raytracer::get_pixel4(int x, int y, float t) {
-  return shaders_[static_cast<int>(activeShader_)]->getPixel4(x, y);
+  return shaders_[static_cast<int>(ShaderEnum::Common)]->getPixel4(x, y);
 }
 
 std::array<Color4f, 8> Raytracer::get_pixel8(int x, int y, float) {
-  return shaders_[static_cast<int>(activeShader_)]->getPixel8(x, y);
+  return shaders_[static_cast<int>(ShaderEnum::Common)]->getPixel8(x, y);
 }
 
 std::array<Color4f, 16> Raytracer::get_pixel16(int x, int y, float) {
-  return shaders_[static_cast<int>(activeShader_)]->getPixel16(x, y);
+  return shaders_[static_cast<int>(ShaderEnum::Common)]->getPixel16(x, y);
 }
 
 int Raytracer::Ui() {
-  static const char *shaderNames[static_cast<int>(ShaderEnum::ShadersCount)] = {
-      "None",
-      "Diffuse",
-      "Phong",
-      "Normals",
-      "Recursive Phong",
-      "Glass",
-      "Common",
-      "Path tracer"};
   
-  static const char *multiRayNames[4] = {
-      "1x1",
-      "2x2",
-      "2x4",
-      "4x4"};
-  
+  static const std::pair<const char *, ShadingType> shadingArray[] = {
+      std::pair("Common", ShadingType::None),
+      std::pair("Lambert", ShadingType::Lambert),
+      std::pair("Glass", ShadingType::Glass),
+      std::pair("PathTracing", ShadingType::PathTracing),
+      std::pair("Mirror", ShadingType::Mirror),
+      std::pair("Phong", ShadingType::Phong),
+      std::pair("Normals", ShadingType::Normals),
+      std::pair("Textuture coords", ShadingType::TexCoords)
+  };
+  static_cast<CommonShader *>(shaders_[static_cast<int>(ShaderEnum::Common)])->useShader = shadingArray[currentShadingIdx].second;
   
   ImGui::Begin("Ray Tracer Params", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-  ImGui::SetNextItemOpen(true);
+  
   if (ImGui::CollapsingHeader("Engine", 0)) {
     ImGui::Text("Surfaces = %zu", surfaces_.size());
     ImGui::Text("Materials = %zu", materials_.size());
@@ -253,106 +256,65 @@ int Raytracer::Ui() {
                 ImGui::GetIO().Framerate);
     ImGui::Text("Raytracer time %.3f ms/frame (%.1f FPS)", SimpleGuiDX11::producerTime * 1000.f,
                 1000.f / (SimpleGuiDX11::producerTime * 1000.f));
-//    ImGui::Separator();
   }
-  
-  ImGui::SetNextItemOpen(true);
+
+//  ImGui::SetNextItemOpen(true);
   if (ImGui::CollapsingHeader("Shader", 0)) {
+    static const char *currentShaderLabel = shadingArray[currentShadingIdx].first;
     
-    ImGui::Combo("Selected Shader", reinterpret_cast<int *>(&activeShader_), shaderNames,
-                 static_cast<int>(ShaderEnum::ShadersCount));
-
-//    ImGui::Combo("Selected Multiray", reinterpret_cast<int *>(&multiRay_), multiRayNames,
-//                 4);
-
-//    ImGui::Checkbox("Flip texture U", &Shader::flipTextureU_);
-//    ImGui::Checkbox("Flip texture V", &Shader::flipTextureV_);
+    struct FuncHolder {
+      static bool ItemGetter(void *data, int idx, const char **out_str) {
+        *out_str = reinterpret_cast<std::pair<const char *, ShadingType> *>(data)[idx].first;
+        return true;
+      }
+    };
+    
+    ImGui::Combo("Selected Shader", &currentShadingIdx, &FuncHolder::ItemGetter, (void *) shadingArray,
+                 IM_ARRAYSIZE(shadingArray));
+    
+    switch (shadingArray[currentShadingIdx].second) {
+      
+      case ShadingType::None: {
+        break;
+      }
+      case ShadingType::Lambert: {
+        break;
+      }
+      case ShadingType::Glass: {
+        ImGui::SliderFloat("Ior", &static_cast<CommonShader*>(shaders_[static_cast<int>(ShaderEnum::Common)])->ior, 0.5,
+                           2.5);
+        break;
+      }
+      case ShadingType::PathTracing: {
+        break;
+      }
+      case ShadingType::Mirror: {
+        break;
+      }
+      case ShadingType::Phong: {
+        break;
+      }
+      case ShadingType::Normals: {
+        break;
+      }
+      case ShadingType::TexCoords: {
+        break;
+      }
+    }
+    
     ImGui::Checkbox("Sphere map", &Shader::sphereMap_);
     
     ImGui::Checkbox("Supersampling", &Shader::supersampling_);
     
     if (Shader::supersampling_) {
       ImGui::Checkbox("Rand supersampling", &Shader::supersamplingRandom_);
-      ImGui::SliderInt("Samples", &Shader::samplingSize_, 1, 10);
+      ImGui::SliderInt("Samples", &Shader::samplingSize_, 1, 1000);
     }
     
     ImGui::SliderFloat("Ray near", &Shader::tNear_, 0, 0.5f);
     
-    
     ImGui::Checkbox("Correct normals", &Shader::correctNormals_);
-    switch (activeShader_) {
-      
-      case ShaderEnum::None: {
-        break;
-      }
-      case ShaderEnum::Diffuse: {
-        break;
-      }
-      case ShaderEnum::Phong: {
-        ImGui::Checkbox("Ambient", &PhongShader::phongAmbient_);
-        ImGui::Checkbox("Diffuse", &PhongShader::phongDiffuse_);
-        ImGui::Checkbox("Specular", &PhongShader::phongSpecular_);
-        
-        ImGui::Separator();
-        
-        ImGui::SliderFloat("Ambient Slider", &PhongShader::ambientValue_, 0.0f, 30.0f);
-        ImGui::SliderFloat("Specular strength Slider", &PhongShader::specularStrength_, 0.0f, 30.0f);
-        
-        break;
-      }
-      case ShaderEnum::Normals: {
-        break;
-      }
-      case ShaderEnum::RecursivePhong: {
-        ImGui::Separator();
-        ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 1, 10);
-        ImGui::SliderFloat("Reflectivity", &RecursivePhongShader::reflectivityCoef, 0, 1);
-        break;
-      }
-      case ShaderEnum::Glass: {
-        ImGui::Separator();
-        ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 0, 10);
-        ImGui::SliderFloat("Ior", &GlassShader::ior_, 0.01f, 2.f);
-        ImGui::Separator();
-        
-        ImGui::Checkbox("Add reflect", &GlassShader::addReflect_);
-        if (GlassShader::addReflect_) {
-          ImGui::Checkbox("Add diffuse to reflect", &GlassShader::addDiffuseToReflect_);
-        }
-        
-        ImGui::Checkbox("Add refract", &GlassShader::addRefract_);
-        if (GlassShader::addRefract_) {
-          ImGui::Checkbox("Add diffuse to refract", &GlassShader::addDiffuseToRefract_);
-        }
-        
-        ImGui::Checkbox("Add attenuation", &GlassShader::addAttenuation);
-        if (GlassShader::addAttenuation) {
-          ImGui::SliderFloat("Material attenuation", &GlassShader::attenuation_, 0.00f, 10.f);
-        }
-        break;
-      }
-      case ShaderEnum::Common: {
-        ImGui::Separator();
-        ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 0, 10);
-        ImGui::SliderFloat("Ior", &GlassShader::ior_, 0.01f, 2.f);
-        ImGui::Separator();
-        break;
-      }
-      case ShaderEnum::PathTracing: {
-        ImGui::Separator();
-        ImGui::SliderInt("Recursion", &Shader::recursionDepth_, 0, 10);
-        ImGui::SliderFloat("Ior", &GlassShader::ior_, 0.01f, 2.f);
-        ImGui::Separator();
-        ImGui::Checkbox("Use parent GetPixel", &PathTracingShader::useParentGetPixel_);
-        if (!PathTracingShader::useParentGetPixel_) {
-          ImGui::SliderInt("Samples per pixel", &PathTracingShader::samples_, 1, 2000);
-        }
-        break;
-      }
-      case ShaderEnum::ShadersCount: {
-        break;
-      }
-    }
+    
     if (!Shader::sphereMap_) {
       ImGui::Separator();
       ImGui::ColorPicker4("Background color", &defaultBgColor_.x);
@@ -360,7 +322,6 @@ int Raytracer::Ui() {
     }
   }
   
-  ImGui::SetNextItemOpen(true);
   if (ImGui::CollapsingHeader("Camera", true)) {
     ImGui::Text("Camera position");
     ImGui::SliderFloat("X", &camera_.view_from_.x, -100.0f, 100.0f);

@@ -237,8 +237,8 @@ int staticSceneSphere(const char *config) {
 
 int staticSceneGeoSpheres(const char *config) {
   Raytracer raytracer(
-      640,
-      480,
+      640*2,
+      480*2,
       deg2rad(45.0),
       Vector3(0, -1, 20),
       Vector3(0, 0, 0),
