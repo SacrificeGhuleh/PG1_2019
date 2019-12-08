@@ -22,6 +22,16 @@ class Material;
 
 class SphericalMap;
 
+class PathTracerHelper;
+
+enum class SuperSamplingType : int{
+  None = 0,
+  Uniform,
+  RandomFinite,
+  RandomInfinite,
+  SuperSamplingCount
+};
+
 class Shader {
 public:
   Shader(Camera *camera,
@@ -42,7 +52,7 @@ public:
   //Gets 4x4 pixels (4 height, 4 width)
   virtual std::array<Color4f, 16> getPixel16(int x, int y);
   
-  virtual Color4f traceRay(const RtcRayHitIor &rayHit, int depth );
+  virtual Color4f traceRay(const RtcRayHitIor &rayHit, int depth);
   
   RtcRayHitIor shootRay(float x, float y);
   
@@ -91,13 +101,17 @@ protected:
   Color4f *defaultBgColor_;
   SphericalMap *sphericalMap_;
   
+  
   static glm::vec3 getNormal(RTCGeometry geometry, const RtcRayHitIor &rayHit);
   
   static glm::vec2 getTexCoords(RTCGeometry geometry, const RtcRayHitIor &rayHit);
   
   float shadow(const glm::vec3 &pos, const glm::vec3 &lightDir, const float dist);
 
+  
 public:
+  PathTracerHelper *pathTracerHelper;
+  
   void setSphericalMap(SphericalMap *sphericalMap);
   
   void setDefaultBgColor(Color4f *defaultBgColor);
@@ -109,10 +123,13 @@ public:
   static bool sphereMap_;
   static bool correctNormals_;
   static int samplingSize_;
+  static int samplingSizeX_;
+  static int samplingSizeY_;
   static int recursionDepth_;
   static float tNear_;
+  static bool changeShader_;
   
-  
+  static SuperSamplingType superSamplingType_;
 };
 
 

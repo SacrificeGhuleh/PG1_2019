@@ -6,23 +6,20 @@
 #include <engine/light.h>
 #include <engine/sphericalmap.h>
 
-//geometry
+//Geometry
 #include <geometry/objloader.h>
 
 //Shaders
-#include <shaders/phongshader.h>
-#include <shaders/normalsshader.h>
-#include <shaders/diffuseshader.h>
-#include <shaders/recursivephongshader.h>
-#include <shaders/glassshader.h>
+#include <shaders/commonshader.h>
+#include <shaders/pathtracerhelper.h>
 
 //Utils
 #include <utils/utils.h>
-#include <shaders/commonshader.h>
-#include <shaders/pathtracingshader.h>
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 
-int Raytracer::currentShadingIdx = 0;
+#include <utils/stb_image_write.h>
+
 
 Raytracer::Raytracer(const int width,
                      const int height,
@@ -41,6 +38,7 @@ Raytracer::Raytracer(const int width,
   phongSpecular_ = false;
   ambientValue_ = 1.f;
   specularStrength_ = 1.f;
+  currentShadingIdx_ = 0;
   
   defaultBgColor_ = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
   
@@ -50,77 +48,20 @@ Raytracer::Raytracer(const int width,
   sphericalMap_ = new SphericalMap("data/field.jpg");
 //  sphericalMap_ = new SphericalMap("data/outdoor_umbrellas_4k.hdr");
   
-  
-  activeShader_ = ShaderEnum::Common;
-  
-  shaders_[static_cast<int>(ShaderEnum::None)] = new Shader(
+  shader_ = new CommonShader(
       &camera_,
       light_,
       &scene_,
       &surfaces_,
       &materials_);
-  
-  shaders_[static_cast<int>(ShaderEnum::Diffuse)] = new DiffuseShader(
-      &camera_,
-      light_,
-      &scene_,
-      &surfaces_,
-      &materials_);
-  
-  shaders_[static_cast<int>(ShaderEnum::Phong)] = new PhongShader(
-      &camera_,
-      light_,
-      &scene_,
-      &surfaces_,
-      &materials_);
-  
-  shaders_[static_cast<int>(ShaderEnum::Normals)] = new NormalsShader(
-      &camera_,
-      light_,
-      &scene_,
-      &surfaces_,
-      &materials_);
-  
-  shaders_[static_cast<int>(ShaderEnum::RecursivePhong)] = new RecursivePhongShader(
-      &camera_,
-      light_,
-      &scene_,
-      &surfaces_,
-      &materials_);
-  
-  shaders_[static_cast<int>(ShaderEnum::Glass)] = new GlassShader(
-      &camera_,
-      light_,
-      &scene_,
-      &surfaces_,
-      &materials_);
-  
-  shaders_[static_cast<int>(ShaderEnum::Common)] = new CommonShader(
-      &camera_,
-      light_,
-      &scene_,
-      &surfaces_,
-      &materials_);
-  shaders_[static_cast<int>(ShaderEnum::PathTracing)] = new PathTracingShader(
-      &camera_,
-      light_,
-      &scene_,
-      &surfaces_,
-      &materials_);
-  
-  for (auto shader : shaders_) {
-    shader->setDefaultBgColor(&defaultBgColor_);
-    shader->setSphericalMap(sphericalMap_);
-  }
-  
-  
+  shader_->setDefaultBgColor(&defaultBgColor_);
+  shader_->setSphericalMap(sphericalMap_);
+  shader_->pathTracerHelper = new PathTracerHelper(height, width);
 }
 
 Raytracer::~Raytracer() {
   LOG("Destructor called");
-  for (auto shader : shaders_) {
-    SAFE_DELETE(shader);
-  }
+  SAFE_DELETE(shader_);
   SAFE_DELETE(light_);
   SAFE_DELETE(sphericalMap_);
   
@@ -212,23 +153,22 @@ void Raytracer::LoadScene(const std::string file_name) {
 }
 
 Color4f Raytracer::get_pixel(const int x, const int y, const float t) {
-  if(x == 320/2 && y == 240/3*2){
-    (void)0;
+  if (x == 320 / 2 && y == 240 / 3 * 2) {
+    (void) 0; //debugger, ray to path tracing pixel
   }
-  return (shaders_[static_cast<int>(ShaderEnum::Common)]->getPixel(x, y));
-//  return (shaders_[static_cast<int>(activeShader_)]->getPixel(x, y));
+  return (shader_->getPixel(x, y));
 }
 
 std::array<Color4f, 4> Raytracer::get_pixel4(int x, int y, float t) {
-  return shaders_[static_cast<int>(ShaderEnum::Common)]->getPixel4(x, y);
+  return shader_->getPixel4(x, y);
 }
 
 std::array<Color4f, 8> Raytracer::get_pixel8(int x, int y, float) {
-  return shaders_[static_cast<int>(ShaderEnum::Common)]->getPixel8(x, y);
+  return shader_->getPixel8(x, y);
 }
 
 std::array<Color4f, 16> Raytracer::get_pixel16(int x, int y, float) {
-  return shaders_[static_cast<int>(ShaderEnum::Common)]->getPixel16(x, y);
+  return shader_->getPixel16(x, y);
 }
 
 int Raytracer::Ui() {
@@ -243,7 +183,14 @@ int Raytracer::Ui() {
       std::pair("Normals", ShadingType::Normals),
       std::pair("Textuture coords", ShadingType::TexCoords)
   };
-  static_cast<CommonShader *>(shaders_[static_cast<int>(ShaderEnum::Common)])->useShader = shadingArray[currentShadingIdx].second;
+  shader_->useShader = shadingArray[currentShadingIdx_].second;
+  
+  static const char *samplingTypeLabels[static_cast<int>(SuperSamplingType::SuperSamplingCount)] = {
+      "None",
+      "Uniform",
+      "Cumulative random finite",
+      "Cumulative random infinite"
+  };
   
   ImGui::Begin("Ray Tracer Params", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
   
@@ -260,7 +207,7 @@ int Raytracer::Ui() {
 
 //  ImGui::SetNextItemOpen(true);
   if (ImGui::CollapsingHeader("Shader", 0)) {
-    static const char *currentShaderLabel = shadingArray[currentShadingIdx].first;
+    static const char *currentShaderLabel = shadingArray[currentShadingIdx_].first;
     
     struct FuncHolder {
       static bool ItemGetter(void *data, int idx, const char **out_str) {
@@ -269,10 +216,11 @@ int Raytracer::Ui() {
       }
     };
     
-    ImGui::Combo("Selected Shader", &currentShadingIdx, &FuncHolder::ItemGetter, (void *) shadingArray,
+    ImGui::Combo("Selected Shader", &currentShadingIdx_, &FuncHolder::ItemGetter, (void *) shadingArray,
                  IM_ARRAYSIZE(shadingArray));
     
-    switch (shadingArray[currentShadingIdx].second) {
+    
+    switch (shadingArray[currentShadingIdx_].second) {
       
       case ShadingType::None: {
         break;
@@ -281,7 +229,8 @@ int Raytracer::Ui() {
         break;
       }
       case ShadingType::Glass: {
-        ImGui::SliderFloat("Ior", &static_cast<CommonShader*>(shaders_[static_cast<int>(ShaderEnum::Common)])->ior, 0.5,
+        ImGui::SliderFloat("Ior", &shader_->ior,
+                           0.5,
                            2.5);
         break;
       }
@@ -304,12 +253,56 @@ int Raytracer::Ui() {
     
     ImGui::Checkbox("Sphere map", &Shader::sphereMap_);
     
-    ImGui::Checkbox("Supersampling", &Shader::supersampling_);
+    ImGui::Separator();
     
-    if (Shader::supersampling_) {
-      ImGui::Checkbox("Rand supersampling", &Shader::supersamplingRandom_);
-      ImGui::SliderInt("Samples", &Shader::samplingSize_, 1, 1000);
+    const SuperSamplingType currentSamplingType = Shader::superSamplingType_;
+    
+    ImGui::Combo("Supersampling", reinterpret_cast<int *>(&Shader::superSamplingType_), samplingTypeLabels,
+                 IM_ARRAYSIZE(samplingTypeLabels));
+    switch (Shader::superSamplingType_) {
+      
+      case SuperSamplingType::Uniform: {
+        ImGui::SliderInt("SamplesX", &Shader::samplingSizeX_, 1, 50);
+        ImGui::SliderInt("SamplesY", &Shader::samplingSizeY_, 1, 50);
+        ImGui::Text("Samples total = %zu", Shader::samplingSizeX_ * Shader::samplingSizeY_);
+        break;
+      }
+      case SuperSamplingType::RandomFinite: {
+        ImGui::SliderInt("Samples", &Shader::samplingSize_, 1, 2500);
+        break;
+      }
+      case SuperSamplingType::RandomInfinite: {
+        static int lastSaved = 0;
+        int traces = shader_->pathTracerHelper->getTracesCount();
+        ImGui::Text("Samples total = %zu", traces);
+        
+        std::string filename = std::string("out/path tracing - samples ");
+        filename.append(std::to_string(traces));
+        filename.append(".png");
+        
+        if (traces > 0 && traces < 100) {
+          if (traces % 10 == 0 && lastSaved < traces) {
+            saveImage(filename);
+          }
+        } else if (traces < 1000) {
+          if (traces % 100 == 0 && lastSaved < traces) {
+            saveImage(filename);
+          }
+        } else {
+          if (traces % 1000 == 0 && lastSaved < traces) {
+            saveImage(filename);
+          }
+        }
+        
+        break;
+      }
     }
+    
+    if (currentSamplingType != Shader::superSamplingType_) {
+      //TODO handle reset
+      shader_->pathTracerHelper->resetTraces();
+    }
+    ImGui::Separator();
     
     ImGui::SliderFloat("Ray near", &Shader::tNear_, 0, 0.5f);
     
@@ -336,4 +329,27 @@ int Raytracer::Ui() {
   
   ImGui::End();
   return 0;
+}
+
+void Raytracer::saveImage(const std::string &filename) {
+  uint8_t *writeArray = new uint8_t[width_ * height_ * 4]();
+  
+  {
+    std::lock_guard<std::mutex> lock(tex_data_lock_);
+    
+    for (int y = 0; y < height_; ++y) {
+      for (int x = 0; x < width_; ++x) {
+        const int offset = (y * width_ + x) * 4;
+        writeArray[offset + 0] = tex_data_[offset + 0] * 255;
+        writeArray[offset + 1] = tex_data_[offset + 1] * 255;
+        writeArray[offset + 2] = tex_data_[offset + 2] * 255;
+        writeArray[offset + 3] = tex_data_[offset + 3] * 255;
+        
+      }
+    }
+    
+  } // lock release
+  
+  stbi_write_png(filename.c_str(), width_, height_, 4, writeArray, width_ * 4);
+  delete[] writeArray;
 }

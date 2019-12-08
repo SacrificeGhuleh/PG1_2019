@@ -109,27 +109,16 @@ set(MATH
     src/pg/pg1_embree/math/vector.h)
 
 set(SHADERS
-    src/pg/pg1_embree/shaders/phongshader.cpp
-    src/pg/pg1_embree/shaders/phongshader.h
     src/pg/pg1_embree/shaders/shader.cpp
     src/pg/pg1_embree/shaders/shader.h
-    src/pg/pg1_embree/shaders/shaderenum.h
-    src/pg/pg1_embree/shaders/diffuseshader.cpp
-    src/pg/pg1_embree/shaders/diffuseshader.h
-    src/pg/pg1_embree/shaders/normalsshader.cpp
-    src/pg/pg1_embree/shaders/normalsshader.h
-    src/pg/pg1_embree/shaders/recursivephongshader.cpp
-    src/pg/pg1_embree/shaders/recursivephongshader.h
-    src/pg/pg1_embree/shaders/glassshader.cpp
-    src/pg/pg1_embree/shaders/glassshader.h
     src/pg/pg1_embree/shaders/commonshader.cpp
-    src/pg/pg1_embree/shaders/commonshader.h)
+    src/pg/pg1_embree/shaders/commonshader.h src/pg/pg1_embree/shaders/pathtracerhelper.cpp src/pg/pg1_embree/shaders/pathtracerhelper.h)
 
 set(UTILS
     src/pg/pg1_embree/utils/structs.h
     src/pg/pg1_embree/utils/utils.cpp
     src/pg/pg1_embree/utils/utils.h
-    )
+    src/pg/pg1_embree/utils/stb_image_write.h)
 
 set(SRC
     src/pg/pg1_embree/pg1_embree.cpp
@@ -141,8 +130,7 @@ set(SRC
 set(TESTS
     src/pg/pg1_embree/tests/test.h
     src/pg/pg1_embree/shaders/shadingtype.h
-    src/pg/pg1_embree/shaders/pathtracingshader.cpp
-    src/pg/pg1_embree/shaders/pathtracingshader.h)
+    )
 
 add_executable(${PROJECT_NAME} ${SRC} ${UTILS} ${SHADERS} ${MATH} ${GEOMETRY} ${ENGINE} ${TESTS} ${IMGUI} ${PCH})
 

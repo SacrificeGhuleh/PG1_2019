@@ -17,6 +17,8 @@ public:
   
   glm::vec3 hemisphereSampling(glm::vec3 normal, float& pdf);
   
+  
+  
   static float ior;
   static ShadingType useShader;
 private:

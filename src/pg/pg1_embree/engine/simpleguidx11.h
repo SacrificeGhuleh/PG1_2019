@@ -61,6 +61,12 @@ protected:
   int height() const;
   
   bool vsync_{true};
+protected:
+  int width_{640};
+  int height_{480};
+  float *tex_data_{nullptr}; // DXGI_FORMAT_R32G32B32A32_FLOAT
+  std::mutex tex_data_lock_;
+
 private:
   WNDCLASSEX wc_;
   
@@ -72,10 +78,6 @@ private:
   ID3D11RenderTargetView *g_mainRenderTargetView{nullptr};
   ID3D11Texture2D *tex_id_{nullptr};
   ID3D11ShaderResourceView *tex_view_{nullptr};
-  int width_{640};
-  int height_{480};
-  float *tex_data_{nullptr}; // DXGI_FORMAT_R32G32B32A32_FLOAT
-  std::mutex tex_data_lock_;
   
   std::atomic<bool> finish_request_{false};
 };

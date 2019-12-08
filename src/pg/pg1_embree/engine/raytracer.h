@@ -4,11 +4,10 @@
 #include <engine/simpleguidx11.h>
 #include <geometry/surface.h>
 #include <engine/camera.h>
-#include <shaders/shaderenum.h>
 
 class SphericalMap;
 
-class Shader;
+class CommonShader;
 
 class Light;
 
@@ -47,6 +46,8 @@ public:
   virtual std::array<Color4f, 16> get_pixel16(int x, int y, float t = 0.0f);
   
   int Ui() override;
+  
+  virtual void saveImage(const std::string& filename);
 
 
 private:
@@ -57,12 +58,9 @@ private:
   RTCScene scene_;
   Camera camera_;
   
-  
-  ShaderEnum activeShader_;
-  
   Light *light_;
   
-  std::array<Shader *, static_cast<int>(ShaderEnum::ShadersCount)> shaders_;
+  CommonShader *shader_;
   
   float ambientValue_;
   float specularStrength_;
@@ -72,5 +70,5 @@ private:
   bool phongSpecular_;
   Color4f defaultBgColor_;
   SphericalMap *sphericalMap_;
-  static int currentShadingIdx;
+  int currentShadingIdx_;
 };

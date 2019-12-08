@@ -15,16 +15,21 @@
 #include <math/mymath.h>
 #include <utils/utils.h>
 
+#include <shaders/pathtracerhelper.h>
+
 bool Shader::flipTextureU_ = false;
 bool Shader::sphereMap_ = false;
 bool Shader::correctNormals_ = true;
 bool Shader::flipTextureV_ = true;
 bool Shader::supersampling_ = false;
 bool Shader::supersamplingRandom_ = false;
+bool Shader::changeShader_ = false;
 int Shader::samplingSize_ = 3;
+int Shader::samplingSizeX_ = 3;
+int Shader::samplingSizeY_ = 3;
 int Shader::recursionDepth_ = 10;
 float Shader::tNear_ = 0.01f;
-
+SuperSamplingType Shader::superSamplingType_ = SuperSamplingType::None;
 
 Shader::Shader(Camera *camera,
                Light *light,
@@ -175,14 +180,39 @@ Color3f Shader::getDiffuseColor(const Material *material, const Coord2f &tex_coo
 }
 
 Color4f Shader::getPixel(const int x, const int y) {
-  if (supersampling_) {
-    Color4f finalColor(0, 0, 0, 1);
-    
-    
-    if (supersamplingRandom_) {
-      float offsetX = Random(-0.5f, 0.5f);
-      float offsetY = Random(-0.5f, 0.5f);
-      for (int i = 0; i < (/*samplingSize_ * */samplingSize_) - 1; i++) {
+  Color4f finalColor(0, 0, 0, 0);
+  
+  float offsetX;
+  float offsetY;
+  
+  switch (superSamplingType_) {
+    case SuperSamplingType::None: {
+      RtcRayHitIor ray = shootRay(static_cast<float>(x), static_cast<float>(y));
+      finalColor = traceRay(ray, recursionDepth_);
+      break;
+    }
+    case SuperSamplingType::Uniform: {
+      offsetX = -0.5f;
+      offsetY = -0.5f;
+      const float offsetAdditionX = 1.0f / static_cast<float>(samplingSizeX_);
+      const float offsetAdditionY = 1.0f / static_cast<float>(samplingSizeY_);
+  
+      for (int i = 0; i < samplingSizeX_; i++) {
+        for (int j = 0; j < samplingSizeY_; j++) {
+          RtcRayHitIor ray = shootRay(static_cast<float>(x) + offsetX, static_cast<float>(y) + offsetY);
+          finalColor += traceRay(ray, recursionDepth_);
+          offsetX += offsetAdditionX;
+        }
+        offsetX = -0.5f;
+        offsetY += offsetAdditionY;
+      }
+      break;
+    }
+    case SuperSamplingType::RandomFinite: {
+      offsetX = Random(-0.5f, 0.5f);
+      offsetY = Random(-0.5f, 0.5f);
+      
+      for (int i = 0; i < (samplingSize_) - 1; i++) {
         RtcRayHitIor ray = shootRay(static_cast<float>(x) + offsetX, static_cast<float>(y) + offsetY);
         finalColor += traceRay(ray, recursionDepth_);
       }
@@ -190,75 +220,23 @@ Color4f Shader::getPixel(const int x, const int y) {
         RtcRayHitIor ray = shootRay(static_cast<float>(x), static_cast<float>(y));
         finalColor += traceRay(ray, recursionDepth_);
       }
-    } else {
-      float offsetX = -0.5f;
-      float offsetY = -0.5f;
-      float offsetAddition = 1.0f / static_cast<float>(samplingSize_);
-      
-      for (int i = 0; i < samplingSize_; i++) {
-        for (int j = 0; j < samplingSize_; j++) {
-          RtcRayHitIor ray = shootRay(static_cast<float>(x) + offsetX, static_cast<float>(y) + offsetY);
-          finalColor += traceRay(ray, recursionDepth_);
-          offsetX += offsetAddition;
-        }
-        offsetX = -0.5f;
-        offsetY += offsetAddition;
-      }
+      break;
     }
-    return finalColor /finalColor.a/*/ static_cast<float>(samplingSize_ * samplingSize_);*/;
-//
-//    std::array<float, 16> xPositions;
-//    std::array<float, 16> yPositions;
-//
-//    int counter = 0;
-//    for (int i = 0; i < samplingSize_; i++) {
-//      for (int j = 0; j < samplingSize_; j++) {
-//
-//        xPositions[counter] = static_cast<float>(x) + offsetX;
-//        yPositions[counter] = static_cast<float>(y) + offsetY;
-//
-//        //RtcRayHitIor ray = shootRay(static_cast<float>(x) + offsetX, static_cast<float>(y) + offsetY);
-//        //finalColor += traceRay(ray, recursionDepth_);
-//        offsetX += offsetAddition;
-//        counter++;
-//      }
-//      offsetX = -0.5f;
-//      offsetY += offsetAddition;
-//    }
-//    RtcRayHitIor16 rayPacket = shootRay16(xPositions, yPositions);
-//
-//    counter = 0;
-//    for (int i = 0; i < samplingSize_; i++) {
-//      for (int j = 0; j < samplingSize_; j++) {
-//        RtcRayHitIor rayHit;
-//
-//        rayHit.ray.org_x = rayPacket.ray.org_x[counter];
-//        rayHit.ray.org_y = rayPacket.ray.org_y[counter];
-//        rayHit.ray.org_z = rayPacket.ray.org_z[counter];
-//        rayHit.ray.tnear = rayPacket.ray.tnear[counter];
-//        rayHit.ray.dir_x = rayPacket.ray.dir_x[counter];
-//        rayHit.ray.dir_y = rayPacket.ray.dir_y[counter];
-//        rayHit.ray.dir_z = rayPacket.ray.dir_z[counter];
-//        rayHit.ray.time = rayPacket.ray.time[counter];
-//        rayHit.ray.tfar = rayPacket.ray.tfar[counter];
-//        rayHit.ray.mask = rayPacket.ray.mask[counter];
-//        rayHit.ray.id = rayPacket.ray.id[counter];
-//        rayHit.ray.flags = rayPacket.ray.flags[counter];
-//        rayHit.hit.geomID = rayPacket.hit.geomID[counter];
-//        rayHit.hit.primID = rayPacket.hit.primID[counter];
-//        rayHit.hit.Ng_x = rayPacket.hit.Ng_x[counter];
-//        rayHit.hit.Ng_y = rayPacket.hit.Ng_y[counter];
-//        rayHit.hit.Ng_z = rayPacket.hit.Ng_z[counter];
-//
-//        counter++;
-//        finalColor += traceRay(rayHit, recursionDepth_);
-//      }
-//    }
-//    return finalColor / static_cast<float>(samplingSize_ * samplingSize_);
-  } else {
-    RtcRayHitIor ray = shootRay(static_cast<float>(x), static_cast<float>(y));
-    return traceRay(ray, recursionDepth_);
+    case SuperSamplingType::RandomInfinite: {
+      offsetX = Random(-0.5f, 0.5f);
+      offsetY = Random(-0.5f, 0.5f);
+      RtcRayHitIor ray = shootRay(static_cast<float>(x) + offsetX, static_cast<float>(y) + offsetY);
+      pathTracerHelper->setPixel(y, x, traceRay(ray, recursionDepth_));
+      
+      finalColor = pathTracerHelper->getInterpolatedPixel(y, x);
+    }
+    case SuperSamplingType::SuperSamplingCount: {
+      break;
+    }
   }
+  
+  return finalColor / finalColor.a;
+  
 }
 
 std::array<Color4f, 4> Shader::getPixel4(int x, int y) {
@@ -438,7 +416,8 @@ Shader::generateRay4(const glm::vec3 &origin,
   
   RTCIntersectContext context;
   rtcInitIntersectContext(&context);
-  RTC_ALIGN(16) int valid[4] = {-1, -1, -1, -1};
+  RTC_ALIGN(16)
+  int valid[4] = {-1, -1, -1, -1};
   rtcIntersect4(valid, *rtcScene_, &context, &rayHit);
   return rayHit;
 }
@@ -470,7 +449,8 @@ Shader::generateRay8(const glm::vec3 &origin,
   
   RTCIntersectContext context;
   rtcInitIntersectContext(&context);
-  RTC_ALIGN(32) int valid[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
+  RTC_ALIGN(32)
+  int valid[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
   rtcIntersect8(valid, *rtcScene_, &context, &rayHit);
   return rayHit;
   
@@ -502,7 +482,8 @@ RtcRayHitIor16 Shader::generateRay16(const glm::vec3 &origin,
   
   RTCIntersectContext context;
   rtcInitIntersectContext(&context);
-  RTC_ALIGN(64) int valid[16] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+  RTC_ALIGN(64)
+  int valid[16] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
   rtcIntersect16(valid, *rtcScene_, &context, &rayHit);
   return rayHit;
 }
