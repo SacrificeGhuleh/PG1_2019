@@ -113,7 +113,7 @@ Color4f CommonShader::traceMaterial(
   
   glm::vec3 shaderNormal = glm::normalize(normal);
   
-  float diff = glm::dot(normal, direction);
+  float diff = glm::dot(shaderNormal, direction);
   //Flip normal if invalid
   if (correctNormals_) {
     if (diff < 0) {
@@ -169,7 +169,7 @@ Color4f CommonShader::traceMaterial<ShadingType::None>(
   
   glm::vec3 shaderNormal = glm::normalize(normal);
   
-  float diff = glm::dot(normal, direction);
+  float diff = glm::dot(shaderNormal, direction);
   //Flip normal if invalid
   if (correctNormals_) {
     if (diff < 0) {
@@ -204,7 +204,7 @@ Color4f CommonShader::traceMaterial<ShadingType::Glass>(
   
   glm::vec3 shaderNormal = glm::normalize(normal);
   
-  float diff = glm::dot(normal, direction);
+  float diff = glm::dot(shaderNormal, direction);
   //Flip normal if invalid
   if (correctNormals_) {
     if (diff < 0) {
@@ -325,7 +325,7 @@ Color4f CommonShader::traceMaterial<ShadingType::Lambert>(
   glm::vec3 shaderNormal = glm::normalize(normal);
   
   
-  float diff = glm::dot(normal, direction);
+  float diff = glm::dot(shaderNormal, direction);
   //Flip normal if invalid
   if (correctNormals_) {
     if (diff < 0) {
@@ -362,7 +362,7 @@ Color4f CommonShader::traceMaterial<ShadingType::Mirror>(
   
   glm::vec3 shaderNormal = glm::normalize(normal);
   
-  float diff = glm::dot(normal, direction);
+  float diff = glm::dot(shaderNormal, direction);
   //Flip normal if invalid
   if (correctNormals_) {
     if (diff < 0) {
@@ -404,7 +404,7 @@ Color4f CommonShader::traceMaterial<ShadingType::Phong>(
   
   glm::vec3 shaderNormal = glm::normalize(normal);
   
-  float diff = glm::dot(normal, direction);
+  float diff = glm::dot(shaderNormal, direction);
   //Flip normal if invalid
   if (correctNormals_) {
     if (diff < 0) {
@@ -426,7 +426,7 @@ Color4f CommonShader::traceMaterial<ShadingType::Phong>(
   //specular
   Vector3 viewDir = (origin - worldPos);
   viewDir = glm::normalize(viewDir);
-  Vector3 phongReflectDir = glm::reflect(shaderNormal, lightDir);
+  Vector3 phongReflectDir = glm::reflect(lightDir, shaderNormal);
   float spec = powf(glm::dot(viewDir, phongReflectDir), material->shininess);
   
   const glm::vec3 reflectDir = glm::normalize(
@@ -527,7 +527,7 @@ Color4f CommonShader::traceMaterial<ShadingType::Normals>(
   
   glm::vec3 shaderNormal = glm::normalize(normal);
   
-  float diff = glm::dot(normal, direction);
+  float diff = glm::dot(shaderNormal, direction);
   //Flip normal if invalid
   if (correctNormals_) {
     if (diff < 0) {
@@ -561,7 +561,7 @@ Color4f CommonShader::traceMaterial<ShadingType::TexCoords>(
   
   glm::vec3 shaderNormal = glm::normalize(normal);
   
-  float diff = glm::dot(normal, direction);
+  float diff = glm::dot(shaderNormal, direction);
   //Flip normal if invalid
   if (correctNormals_) {
     if (diff < 0) {

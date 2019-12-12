@@ -17,4 +17,6 @@ int staticSceneShip(const char *config = "threads=0,verbose=0");
 
 int staticSceneCornellbox(const char *config = "threads=0,verbose=0");
 
+int staticSceneCornellboxMirrorTest(const char *config = "threads=0,verbose=0");
+
 #endif

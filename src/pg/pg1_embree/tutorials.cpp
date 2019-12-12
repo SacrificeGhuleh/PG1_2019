@@ -272,7 +272,7 @@ int staticSceneShip(const char *config) {
 
 
 int staticSceneCornellbox(const char *config = "threads=0,verbose=0") {
-  /*Raytracer raytracer(
+  Raytracer raytracer(
       320,
       240,
       deg2rad(40.0),
@@ -280,8 +280,15 @@ int staticSceneCornellbox(const char *config = "threads=0,verbose=0") {
       Vector3(0, 0, 250),
       Vector3(0, 0, 300),
       Vector3(1.f),
-      config);*/
+      config);
   
+  raytracer.LoadScene("data/cornell_box2.obj");
+  raytracer.MainLoop();
+  
+  return EXIT_SUCCESS;
+}
+
+int staticSceneCornellboxMirrorTest(const char *config = "threads=0,verbose=0") {
   Raytracer raytracer(
       320,
       240,

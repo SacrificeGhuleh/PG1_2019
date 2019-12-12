@@ -15,12 +15,10 @@ int main() {
 //    staticSceneGeoSpheres();
 //    staticSceneShip();
     staticSceneCornellbox();
+//    staticSceneCornellboxMirrorTest();
   }
   catch (std::exception &e) {
     std::cout << "Exception occured: " << e.what() << '\n';
   }
-//
-//  std::cout << "Total allocations runtime: " << totalAllocations << '\n';
-//  std::cout << "Total deletes runtime: " << totalDelete << '\n';
   return 0;
 }

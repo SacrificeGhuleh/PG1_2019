@@ -222,7 +222,6 @@ int Raytracer::Ui() {
     ImGui::Combo("Selected Shader", &currentShadingIdx_, &FuncHolder::ItemGetter, (void *) shadingArray,
                  IM_ARRAYSIZE(shadingArray));
     
-    
     switch (shadingArray[currentShadingIdx_].second) {
       
       case ShadingType::None: {
@@ -253,6 +252,9 @@ int Raytracer::Ui() {
         break;
       }
     }
+    
+    
+    ImGui::DragInt("Max recursion", &Shader::recursionDepth_);
     
     ImGui::Checkbox("Sphere map", &Shader::sphereMap_);
     
