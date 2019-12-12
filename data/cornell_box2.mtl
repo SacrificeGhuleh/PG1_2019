@@ -12,7 +12,7 @@ newmtl white_lambert
 	Ks 0.0 0.0 0.0
   Ke 0.0 0.0 0.0  
   shader 5
-  
+
 newmtl red_lambert
 	Ns 32
 	d 1
@@ -34,9 +34,9 @@ newmtl green_lambert
 	Ka 0.1 0.1 0.1
 	Kd 0.05 0.95 0.05
 	Ks 0.0 0.0 0.0
-  Ke 0.0 0.0 0.0    
+  Ke 0.0 0.0 0.0
   shader 5
-  
+
 newmtl white_light
   Ka 0.1 0.1 0.1
 	Kd 1.0 0.0 0.0
@@ -71,4 +71,17 @@ newmtl mirror
 newmtl clear_glass	
 	Kd 0.01 0.01 0.01  	   
 	ior 1.5
+	shader 4
+
+newmtl green_plastic_transparent
+	Ns 32
+	d 1
+	Tr 0
+	Tf 1 1 1
+	illum 2
+	Ka 0.03 0.03 0.03
+	Kd 0.85 1.0 0.01
+	Ks 1.0 1.0 1.0
+	Kabs 10.0 0.5 10.0
+	ior 1.460
 	shader 4

@@ -64,6 +64,9 @@ Raytracer::~Raytracer() {
   SAFE_DELETE(shader_);
   SAFE_DELETE(light_);
   SAFE_DELETE(sphericalMap_);
+  for (Surface *surface : surfaces_) {
+    SAFE_DELETE(surface);
+  }
   
   ReleaseDeviceAndScene();
 }

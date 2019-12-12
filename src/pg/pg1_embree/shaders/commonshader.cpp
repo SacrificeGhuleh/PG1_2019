@@ -50,7 +50,7 @@ Color4f CommonShader::traceRay(const RtcRayHitIor &rayHit, int depth) {
   
   if (depth <= 0) {
     resultColor = traceMaterial<ShadingType::Phong>(rayHit, material, tex_coord, normal, worldPos, depth);
-    return Color4f(0,0,0, 1.0f);
+    return Color4f(0, 0, 0, 1.0f);
 //    return Color4f(resultColor, 1.0f);
   }
   
@@ -103,6 +103,29 @@ Color4f CommonShader::traceMaterial(
     const glm::vec3 &normal,
     const glm::vec3 &worldPos,
     int depth) {
+  /*
+   * Common for all shaders
+   * */
+  const Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y, rayHit.ray.org_z);
+  const Vector3 direction(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
+  const Vector3 directionToCamera = -direction;
+  const Vector3 lightDir = glm::normalize(light_->getPosition() - worldPos);
+  
+  glm::vec3 shaderNormal = glm::normalize(normal);
+  
+  float diff = glm::dot(normal, direction);
+  //Flip normal if invalid
+  if (correctNormals_) {
+    if (diff < 0) {
+      shaderNormal *= -1.f;
+      diff *= -1.f;
+    }
+  }
+  
+  /*
+   * End of common for all shaders
+   * */
+  
   std::cout << "Warning, no material\n";
   return Color4f(1, 0, 1, 1);
 }
@@ -136,6 +159,29 @@ Color4f CommonShader::traceMaterial<ShadingType::None>(
     const glm::vec3 &normal,
     const glm::vec3 &worldPos,
     int depth) {
+  /*
+   * Common for all shaders
+   * */
+  const Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y, rayHit.ray.org_z);
+  const Vector3 direction(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
+  const Vector3 directionToCamera = -direction;
+  const Vector3 lightDir = glm::normalize(light_->getPosition() - worldPos);
+  
+  glm::vec3 shaderNormal = glm::normalize(normal);
+  
+  float diff = glm::dot(normal, direction);
+  //Flip normal if invalid
+  if (correctNormals_) {
+    if (diff < 0) {
+      shaderNormal *= -1.f;
+      diff *= -1.f;
+    }
+  }
+  
+  /*
+   * End of common for all shaders
+   * */
+  
   return Color4f(1.f, 0.f, 0.f, 1.f);
 }
 
@@ -147,11 +193,34 @@ Color4f CommonShader::traceMaterial<ShadingType::Glass>(
     const glm::vec3 &normal,
     const glm::vec3 &worldPos,
     int depth) {
-  float materialIor;
-  if(useShader == ShadingType::Glass){
-    materialIor = ior;
+  
+  /*
+   * Common for all shaders
+   * */
+  const Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y, rayHit.ray.org_z);
+  const Vector3 direction(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
+  const Vector3 directionToCamera = -direction;
+  const Vector3 lightDir = glm::normalize(light_->getPosition() - worldPos);
+  
+  glm::vec3 shaderNormal = glm::normalize(normal);
+  
+  float diff = glm::dot(normal, direction);
+  //Flip normal if invalid
+  if (correctNormals_) {
+    if (diff < 0) {
+      shaderNormal *= -1.f;
+      diff *= -1.f;
+    }
   }
-  else{
+  
+  /*
+   * End of common for all shaders
+   * */
+  
+  float materialIor;
+  if (useShader == ShadingType::Glass) {
+    materialIor = ior;
+  } else {
     assert(material->ior >= 0);
     materialIor = material->ior;
   };
@@ -162,10 +231,6 @@ Color4f CommonShader::traceMaterial<ShadingType::Glass>(
   
   Color4f reflected(0.f, 0.f, 0.f, 1.f);
   Color4f refracted(0.f, 0.f, 0.f, 1.f);
-  
-  glm::vec3 normalForGlass = glm::normalize(normal);
-  const glm::vec3 rayDirection(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
-  const glm::vec3 rayToObserver = -rayDirection;
   
   //n1 = ray ior
   //n2 = material ior
@@ -182,16 +247,16 @@ Color4f CommonShader::traceMaterial<ShadingType::Glass>(
   //0.64 1.54
   const float n1overn2 = (n1 / n2);
 //cos1
-  float Q1 = glm::dot(normalForGlass, rayToObserver);
+  float Q1 = glm::dot(shaderNormal, directionToCamera);
   
   if (Q1 < 0) {
-    normalForGlass = -normalForGlass;
-    Q1 = glm::dot(normalForGlass, rayToObserver);
+    shaderNormal = -shaderNormal;
+    Q1 = glm::dot(shaderNormal, directionToCamera);
   }
   assert(Q1 >= 0);
   
   const glm::vec3 reflectDir = glm::normalize(
-      (2.f * (rayToObserver * normalForGlass)) * normalForGlass - rayToObserver);
+      (2.f * (directionToCamera * shaderNormal)) * shaderNormal - directionToCamera);
   
   RtcRayHitIor reflectedRayHit = generateRay(worldPos, reflectDir, tNear_);
   reflectedRayHit.ior = n2;
@@ -204,7 +269,7 @@ Color4f CommonShader::traceMaterial<ShadingType::Glass>(
 //cos2
   const float Q2 = sqrtf(tmp);
   const glm::vec3 refractedDir = glm::normalize(
-      (n1overn2 * rayDirection) + ((n1overn2 * Q1 - Q2) * normalForGlass));
+      (n1overn2 * direction) + ((n1overn2 * Q1 - Q2) * shaderNormal));
 // Fresnel
   const float R = Shader::fresnel(n1, n2, Q1, Q2);
   const float coefReflect = R;
@@ -249,6 +314,31 @@ Color4f CommonShader::traceMaterial<ShadingType::Lambert>(
     const glm::vec3 &normal,
     const glm::vec3 &worldPos,
     int depth) {
+  
+  /*
+   * Common for all shaders
+   * */
+  const Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y, rayHit.ray.org_z);
+  const Vector3 direction(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
+  const Vector3 lightDir = glm::normalize(light_->getPosition() - worldPos);
+  
+  glm::vec3 shaderNormal = glm::normalize(normal);
+  
+  
+  float diff = glm::dot(normal, direction);
+  //Flip normal if invalid
+  if (correctNormals_) {
+    if (diff < 0) {
+      shaderNormal *= -1.f;
+      diff *= -1.f;
+    }
+  }
+  
+  
+  /*
+   * End of common for all shaders
+   * */
+  
   return Color4f(0.f, 0.f, 1.f, 1.f);
 }
 
@@ -261,13 +351,18 @@ Color4f CommonShader::traceMaterial<ShadingType::Mirror>(
     const glm::vec3 &normal,
     const glm::vec3 &worldPos,
     int depth) {
-  Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y, rayHit.ray.org_z);
-  Vector3 direction(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
-  Vector3 lightDir = light_->getPosition() - worldPos;
+  
+  /*
+   * Common for all shaders
+   * */
+  const Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y, rayHit.ray.org_z);
+  const Vector3 direction(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
+  const Vector3 directionToCamera = -direction;
+  const Vector3 lightDir = glm::normalize(light_->getPosition() - worldPos);
+  
   glm::vec3 shaderNormal = glm::normalize(normal);
   
-  lightDir = glm::normalize(lightDir);
-  float diff = glm::dot(normal, lightDir);
+  float diff = glm::dot(normal, direction);
   //Flip normal if invalid
   if (correctNormals_) {
     if (diff < 0) {
@@ -275,10 +370,14 @@ Color4f CommonShader::traceMaterial<ShadingType::Mirror>(
       diff *= -1.f;
     }
   }
-  //specular
-  Vector3 viewDir = (origin - worldPos);
-  viewDir = glm::normalize(viewDir);
-  Vector3 reflectDir = glm::reflect(normal, direction);
+  
+  /*
+   * End of common for all shaders
+   * */
+  
+  
+  //I - N * dot(N, I) * 2
+  Vector3 reflectDir = glm::reflect(direction, shaderNormal);
   
   Color4f reflected(0.f, 0.f, 0.f, 1.f);
   
@@ -295,38 +394,43 @@ Color4f CommonShader::traceMaterial<ShadingType::Phong>(
     const glm::vec3 &normal,
     const glm::vec3 &worldPos,
     int depth) {
-  //ambient
-  Vector3 ambient = material->ambient;
-  
-  //diffuse
-  const Vector3 lightDir = glm::normalize(light_->getPosition() - worldPos);
+  /*
+   * Common for all shaders
+   * */
   const Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y, rayHit.ray.org_z);
+  const Vector3 direction(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
+  const Vector3 directionToCamera = -direction;
+  const Vector3 lightDir = glm::normalize(light_->getPosition() - worldPos);
   
-  const glm::vec3 rayDirection(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
-  const glm::vec3 rayToObserver = -rayDirection;
+  glm::vec3 shaderNormal = glm::normalize(normal);
   
-  glm::vec3 normalForPhong = glm::normalize(normal);
-  
-  float diff = glm::dot(normalForPhong, lightDir);
-  
+  float diff = glm::dot(normal, direction);
   //Flip normal if invalid
   if (correctNormals_) {
     if (diff < 0) {
-      normalForPhong *= -1.f;
+      shaderNormal *= -1.f;
       diff *= -1.f;
     }
   }
   
+  /*
+   * End of common for all shaders
+   * */
+  
+  //ambient
+  Vector3 ambient = material->ambient;
+  
+  //diffuse
   Vector3 diffuse = diff * getDiffuseColor(material, tex_coord);
   
   //specular
   Vector3 viewDir = (origin - worldPos);
   viewDir = glm::normalize(viewDir);
-  Vector3 phongReflectDir = glm::reflect(normalForPhong, lightDir);
+  Vector3 phongReflectDir = glm::reflect(shaderNormal, lightDir);
   float spec = powf(glm::dot(viewDir, phongReflectDir), material->shininess);
   
   const glm::vec3 reflectDir = glm::normalize(
-      (2.f * (rayToObserver * normalForPhong)) * normalForPhong - rayToObserver);
+      (2.f * (directionToCamera * shaderNormal)) * shaderNormal - directionToCamera);
   
   Vector3 specular;
   if (depth <= 0) {
@@ -356,22 +460,17 @@ Color4f CommonShader::traceMaterial<ShadingType::PathTracing>(
     const glm::vec3 &normal,
     const glm::vec3 &worldPos,
     int depth) {
+  /*
+   * Common for all shaders
+   * */
+  const Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y, rayHit.ray.org_z);
+  const Vector3 direction(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
+  const Vector3 directionToCamera = -direction;
+  const Vector3 lightDir = glm::normalize(light_->getPosition() - worldPos);
   
-  Color3f emmision = Color3f{material->emission.x, material->emission.y, material->emission.z};
-  /*if (emmision.r != 0 && emmision.g != 0 && emmision.b != 0) {
-    return Color4f(emmision.r, emmision.g, emmision.b, 1);
-  }*/
-  
-  const Vector3 rayDir = Vector3(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
-  const Vector3 rayView = Vector3(-rayDir.x, -rayDir.y, -rayDir.z);
-  
-  Vector3 lightDir = light_->getPosition() - worldPos;
   glm::vec3 shaderNormal = glm::normalize(normal);
   
-  lightDir = glm::normalize(lightDir);
-  
-  float diff = glm::dot(normal, lightDir/*rayDir*/);
-  
+  float diff = glm::dot(normal, lightDir);
   //Flip normal if invalid
   if (correctNormals_) {
     if (diff < 0) {
@@ -380,6 +479,12 @@ Color4f CommonShader::traceMaterial<ShadingType::PathTracing>(
     }
   }
   
+  /*
+   * End of common for all shaders
+   * */
+  
+  Color3f emmision = Color3f{material->emission.x, material->emission.y, material->emission.z};
+  
   float pdf;
   const Vector3 omegaI = hemisphereSampling(shaderNormal, pdf);
   
@@ -387,13 +492,10 @@ Color4f CommonShader::traceMaterial<ShadingType::PathTracing>(
   
   const Color4f reflColor = traceRay(rayHitNew, depth - 1);
   
-
-  
-  
   Vector3 diffuse = diff * getDiffuseColor(material, tex_coord);
   
   const Vector3 fR = diffuse * glm::vec3(1. / M_PI);
-  
+
 //  float shadowVal = shadow(worldPos, lightDir, glm::l2Norm(light_->getPosition()));
   
   emmision += glm::vec3(reflColor.x, reflColor.y, reflColor.z) * diffuse;
@@ -415,19 +517,30 @@ Color4f CommonShader::traceMaterial<ShadingType::Normals>(
     const glm::vec3 &normal,
     const glm::vec3 &worldPos,
     int depth) {
-  Vector3 lightDir = light_->getPosition() - worldPos;
+  /*
+   * Common for all shaders
+   * */
+  const Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y, rayHit.ray.org_z);
+  const Vector3 direction(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
+  const Vector3 directionToCamera = -direction;
+  const Vector3 lightDir = glm::normalize(light_->getPosition() - worldPos);
   
-  lightDir = glm::normalize(lightDir);
-  glm::vec3 normalForShader = glm::normalize(normal);
+  glm::vec3 shaderNormal = glm::normalize(normal);
   
-  float diff = glm::dot(normal, lightDir);
+  float diff = glm::dot(normal, direction);
+  //Flip normal if invalid
   if (correctNormals_) {
     if (diff < 0) {
-      normalForShader *= -1.f;
+      shaderNormal *= -1.f;
       diff *= -1.f;
     }
   }
-  return Color4f(normalForShader, 1.0f);
+  
+  /*
+   * End of common for all shaders
+   * */
+  
+  return Color4f(shaderNormal, 1.0f);
 }
 
 template<>
@@ -438,5 +551,28 @@ Color4f CommonShader::traceMaterial<ShadingType::TexCoords>(
     const glm::vec3 &normal,
     const glm::vec3 &worldPos,
     int depth) {
-  return Color4f(tex_coord.x,tex_coord.y,1.0, 1.0f);
+  /*
+   * Common for all shaders
+   * */
+  const Vector3 origin(rayHit.ray.org_x, rayHit.ray.org_y, rayHit.ray.org_z);
+  const Vector3 direction(rayHit.ray.dir_x, rayHit.ray.dir_y, rayHit.ray.dir_z);
+  const Vector3 directionToCamera = -direction;
+  const Vector3 lightDir = glm::normalize(light_->getPosition() - worldPos);
+  
+  glm::vec3 shaderNormal = glm::normalize(normal);
+  
+  float diff = glm::dot(normal, direction);
+  //Flip normal if invalid
+  if (correctNormals_) {
+    if (diff < 0) {
+      shaderNormal *= -1.f;
+      diff *= -1.f;
+    }
+  }
+  
+  /*
+   * End of common for all shaders
+   * */
+  
+  return Color4f(tex_coord.x, tex_coord.y, 1.0, 1.0f);
 }

@@ -16,7 +16,7 @@ class Texture {
 public:
   explicit Texture(const char *file_name);
   
-  ~Texture();
+  virtual ~Texture();
   
   Color3f get_texel(float u, float v) const;
   

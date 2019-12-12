@@ -11,16 +11,16 @@ int main() {
   testAll();
   
   try {
-    //  return staticSceneSphere();
-//      return staticSceneGeoSpheres();
-    //  return staticSceneShip();
+//    staticSceneSphere();
+//    staticSceneGeoSpheres();
+//    staticSceneShip();
     staticSceneCornellbox();
   }
   catch (std::exception &e) {
     std::cout << "Exception occured: " << e.what() << '\n';
   }
-  
-  std::cout << "Total allocations runtime: " << totalAllocations << '\n';
-  std::cout << "Total deletes runtime: " << totalDelete << '\n';
+//
+//  std::cout << "Total allocations runtime: " << totalAllocations << '\n';
+//  std::cout << "Total deletes runtime: " << totalDelete << '\n';
   return 0;
 }

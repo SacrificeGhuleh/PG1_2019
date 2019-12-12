@@ -237,8 +237,8 @@ int staticSceneSphere(const char *config) {
 
 int staticSceneGeoSpheres(const char *config) {
   Raytracer raytracer(
-      640*2,
-      480*2,
+      640 * 2,
+      480 * 2,
       deg2rad(45.0),
       Vector3(0, -1, 20),
       Vector3(0, 0, 0),
@@ -254,8 +254,8 @@ int staticSceneGeoSpheres(const char *config) {
 
 int staticSceneShip(const char *config) {
   Raytracer raytracer(
-      640 * 2,
-      480 * 2,
+      640,
+      480,
       deg2rad(45.0),
       Vector3(175, -140, 130),
       Vector3(0, 0, 35),
@@ -272,7 +272,7 @@ int staticSceneShip(const char *config) {
 
 
 int staticSceneCornellbox(const char *config = "threads=0,verbose=0") {
-  Raytracer raytracer(
+  /*Raytracer raytracer(
       320,
       240,
       deg2rad(40.0),
@@ -280,8 +280,17 @@ int staticSceneCornellbox(const char *config = "threads=0,verbose=0") {
       Vector3(0, 0, 250),
       Vector3(0, 0, 300),
       Vector3(1.f),
-      config);
+      config);*/
   
+  Raytracer raytracer(
+      320,
+      240,
+      deg2rad(40.0),
+      Vector3(0, -350, 250),
+      Vector3(0, 105, 103),
+      Vector3(0, 0, 300),
+      Vector3(1.f),
+      config);
   
   raytracer.LoadScene("data/cornell_box2.obj");
   raytracer.MainLoop();
