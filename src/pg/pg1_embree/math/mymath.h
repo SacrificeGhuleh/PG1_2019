@@ -6,19 +6,19 @@
 #include <cmath>
 #include <cfloat>
 #include <cassert>
-#include <math/vector.h>
+#include <glm/vec3.hpp>
 
 template<class T>
 inline T sqr(const T x) {
   return x * x;
 }
 
-inline Normal3f normalize(const Normal3f &n) {
+inline glm::vec3 normalize(const glm::vec3 &n) {
   float tmp = sqr(n.x) + sqr(n.y) + sqr(n.z);
   
   if (fabsf(tmp) > FLT_EPSILON) {
     tmp = 1.0f / tmp;
-    return Normal3f{n.x * tmp, n.y * tmp, n.z * tmp};
+    return glm::vec3{n.x * tmp, n.y * tmp, n.z * tmp};
   }
   
   return n;

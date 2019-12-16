@@ -19,15 +19,16 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
 #include <utils/stb_image_write.h>
+#include <csignal>
 
 
 Raytracer::Raytracer(const int width,
                      const int height,
                      const float fov_y,
-                     const Vector3 view_from,
-                     const Vector3 view_at,
-                     const Vector3 lightPos,
-                     const Vector3 lightColor,
+                     const glm::vec3 view_from,
+                     const glm::vec3 view_at,
+                     const glm::vec3 lightPos,
+                     const glm::vec3 lightColor,
                      const char *config) :
     SimpleGuiDX11(width, height) {
   InitDeviceAndScene(config);
@@ -40,7 +41,7 @@ Raytracer::Raytracer(const int width,
   specularStrength_ = 1.f;
   currentShadingIdx_ = 0;
   
-  defaultBgColor_ = Color4f(0.0f, 0.0f, 0.0f, 1.0f);
+  defaultBgColor_ = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
   
   light_ = new Light(lightPos, lightColor);
 
@@ -102,9 +103,9 @@ void Raytracer::LoadScene(const std::string file_name) {
   for (auto surface : surfaces_) {
     RTCGeometry mesh = rtcNewGeometry(device_, RTC_GEOMETRY_TYPE_TRIANGLE);
     
-    Vertex3f *vertices = (Vertex3f *) rtcSetNewGeometryBuffer(
+    glm::vec3 *vertices = (glm::vec3 *) rtcSetNewGeometryBuffer(
         mesh, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3,
-        sizeof(Vertex3f), 3 * surface->no_triangles());
+        sizeof(glm::vec3), 3 * surface->no_triangles());
     
     Triangle3ui *triangles = (Triangle3ui *) rtcSetNewGeometryBuffer(
         mesh, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3,
@@ -114,13 +115,13 @@ void Raytracer::LoadScene(const std::string file_name) {
     
     rtcSetGeometryVertexAttributeCount(mesh, 2);
     
-    Normal3f *normals = (Normal3f *) rtcSetNewGeometryBuffer(
+    glm::vec3 *normals = (glm::vec3 *) rtcSetNewGeometryBuffer(
         mesh, RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 0, RTC_FORMAT_FLOAT3,
-        sizeof(Normal3f), 3 * surface->no_triangles());
+        sizeof(glm::vec3), 3 * surface->no_triangles());
     
-    Coord2f *tex_coords = (Coord2f *) rtcSetNewGeometryBuffer(
+    glm::vec2 *tex_coords = (glm::vec2 *) rtcSetNewGeometryBuffer(
         mesh, RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 1, RTC_FORMAT_FLOAT2,
-        sizeof(Coord2f), 3 * surface->no_triangles());
+        sizeof(glm::vec2), 3 * surface->no_triangles());
     
     // triangles loop
     for (int i = 0, k = 0; i < surface->no_triangles(); ++i) {
@@ -155,24 +156,13 @@ void Raytracer::LoadScene(const std::string file_name) {
   rtcCommitScene(scene_);
 }
 
-Color4f Raytracer::get_pixel(const int x, const int y, const float t) {
-  if (x == 320 / 2 && y == 240 / 3 * 2) {
-    (void) 0; //debugger, ray to path tracing pixel
+glm::vec4 Raytracer::get_pixel(const int x, const int y, const float t) {
+  if(x == width_/2 && y == height_/2){
+    (void)0;
   }
   return (shader_->getPixel(x, y));
 }
 
-std::array<Color4f, 4> Raytracer::get_pixel4(int x, int y, float t) {
-  return shader_->getPixel4(x, y);
-}
-
-std::array<Color4f, 8> Raytracer::get_pixel8(int x, int y, float) {
-  return shader_->getPixel8(x, y);
-}
-
-std::array<Color4f, 16> Raytracer::get_pixel16(int x, int y, float) {
-  return shader_->getPixel16(x, y);
-}
 
 int Raytracer::Ui() {
   
@@ -200,17 +190,18 @@ int Raytracer::Ui() {
   if (ImGui::CollapsingHeader("Engine", 0)) {
     ImGui::Text("Surfaces = %zu", surfaces_.size());
     ImGui::Text("Materials = %zu", materials_.size());
-    ImGui::Separator();
-    ImGui::Checkbox("Vsync", &vsync_);
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
                 ImGui::GetIO().Framerate);
     ImGui::Text("Raytracer time %.3f ms/frame (%.1f FPS)", SimpleGuiDX11::producerTime * 1000.f,
                 1000.f / (SimpleGuiDX11::producerTime * 1000.f));
+    ImGui::Separator();
+    ImGui::Checkbox("Vsync", &vsync_);
+    ImGui::DragFloat("Gamma correction", &SimpleGuiDX11::gamma_, 0.1f, 0.f);
+    
   }
 
 //  ImGui::SetNextItemOpen(true);
   if (ImGui::CollapsingHeader("Shader", 0)) {
-    static const char *currentShaderLabel = shadingArray[currentShadingIdx_].first;
     
     struct FuncHolder {
       static bool ItemGetter(void *data, int idx, const char **out_str) {
@@ -231,7 +222,7 @@ int Raytracer::Ui() {
         break;
       }
       case ShadingType::Glass: {
-        ImGui::SliderFloat("Ior", &shader_->ior,
+        ImGui::SliderFloat("Ior", &CommonShader::ior,
                            0.5,
                            2.5);
         break;
@@ -243,6 +234,8 @@ int Raytracer::Ui() {
         break;
       }
       case ShadingType::Phong: {
+        
+        
         break;
       }
       case ShadingType::Normals: {
@@ -314,7 +307,6 @@ int Raytracer::Ui() {
     }
     
     if (currentSamplingType != Shader::superSamplingType_) {
-      //TODO handle reset
       shader_->pathTracerHelper->resetTraces();
     }
     ImGui::Separator();
@@ -332,9 +324,6 @@ int Raytracer::Ui() {
   
   if (ImGui::CollapsingHeader("Camera", true)) {
     ImGui::Text("Camera position");
-//    ImGui::SliderFloat("X", &camera_.view_from_.x, -100.0f, 100.0f);
-//    ImGui::SliderFloat("Y", &camera_.view_from_.y, -100.0f, 100.0f);
-//    ImGui::SliderFloat("Z", &camera_.view_from_.z, -100.0f, 100.0f);
     
     ImGui::DragFloat("X##1", &camera_.view_from_.x);
     ImGui::DragFloat("Y##1", &camera_.view_from_.y);
@@ -344,6 +333,16 @@ int Raytracer::Ui() {
     ImGui::DragFloat("X##2", &camera_.view_at_.x);
     ImGui::DragFloat("Y##2", &camera_.view_at_.y);
     ImGui::DragFloat("Z##2", &camera_.view_at_.z);
+  }
+  
+  if (ImGui::CollapsingHeader("Light", true)) {
+    ImGui::Text("Light position");
+    
+    ImGui::DragFloat("X##3", &light_->position_.x);
+    ImGui::DragFloat("Y##3", &light_->position_.y);
+    ImGui::DragFloat("Z##3", &light_->position_.z);
+    
+    ImGui::ColorPicker3("Light color", &light_->color_.x);
   }
   
   static bool show_demo = false;

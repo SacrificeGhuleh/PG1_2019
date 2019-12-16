@@ -2,9 +2,11 @@
 
 #include <array>
 
+#include <glm/vec4.hpp>
+
 #include <engine/simpleguidx11.h>
 #include <utils/structs.h>
-#include <math/vector.h>
+
 
 class SimpleGuiDX11 {
 public:
@@ -16,15 +18,6 @@ public:
   
   static float producerTime;
 protected:
-  
-  enum class MultiRay {
-    PIXEL_1x1,
-    PIXEL_2x2,
-    PIXEL_2x4,
-    PIXEL_4x4
-  };
-  
-  MultiRay multiRay_;
   
   int Init();
   
@@ -46,13 +39,7 @@ protected:
   
   virtual int Ui();
   
-  virtual Color4f get_pixel(int x, int y, float t = 0.0f);
-  
-  virtual std::array<Color4f, 4> get_pixel4(int x, int y, float t = 0.0f);
-  
-  virtual std::array<Color4f, 8> get_pixel8(int x, int y, float t = 0.0f);
-  
-  virtual std::array<Color4f, 16> get_pixel16(int x, int y, float t = 0.0f);
+  virtual glm::vec4 get_pixel(int x, int y, float t = 0.0f);
   
   void Producer();
   
@@ -66,6 +53,8 @@ protected:
   int height_{480};
   float *tex_data_{nullptr}; // DXGI_FORMAT_R32G32B32A32_FLOAT
   std::mutex tex_data_lock_;
+  
+  static float gamma_;
 
 private:
   WNDCLASSEX wc_;

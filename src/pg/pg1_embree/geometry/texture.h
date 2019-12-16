@@ -2,7 +2,7 @@
 #define TEXTURE_H_
 
 #include <FreeImage.h>
-#include <math/vector.h>
+#include <glm/vec3.hpp>
 #include <utils/structs.h>
 
 /*! \class Texture
@@ -18,7 +18,7 @@ public:
   
   virtual ~Texture();
   
-  Color3f get_texel(float u, float v) const;
+  glm::vec3 get_texel(float u, float v) const;
   
   unsigned int width() const;
   

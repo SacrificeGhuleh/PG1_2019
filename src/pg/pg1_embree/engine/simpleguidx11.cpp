@@ -1,10 +1,14 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "openmp-use-default-none"
+
 #include <stdafx.h>
 #include <engine/simpleguidx11.h>
 #include <utils/utils.h>
 
 float SimpleGuiDX11::producerTime;
+float SimpleGuiDX11::gamma_ = 2.4f;
 
-SimpleGuiDX11::SimpleGuiDX11(const int width, const int height) : multiRay_{SimpleGuiDX11::MultiRay::PIXEL_1x1} {
+SimpleGuiDX11::SimpleGuiDX11(const int width, const int height) {
   width_ = width;
   height_ = height;
   
@@ -78,51 +82,8 @@ int SimpleGuiDX11::Ui() {
   return 0;
 }
 
-Color4f SimpleGuiDX11::get_pixel(const int, const int, const float) {
-  return Color4f{1.0f, 0.0f, 1.0f, 1.0f};
-}
-
-std::array<Color4f, 4> SimpleGuiDX11::get_pixel4(int x, int y, float t) {
-  return {
-      Color4f{1.0f, 0.0f, 0.0f, 1.0f},
-      Color4f{0.0f, 1.0f, 0.0f, 1.0f},
-      Color4f{0.0f, 0.0f, 1.0f, 1.0f},
-      Color4f{1.0f, 1.0f, 0.0f, 1.0f}
-  };
-}
-
-std::array<Color4f, 8> SimpleGuiDX11::get_pixel8(int x, int y, float) {
-  return {
-      Color4f{1.0f, 0.0f, 0.0f, 1.0f},
-      Color4f{0.0f, 1.0f, 0.0f, 1.0f},
-      Color4f{1.0f, 0.0f, 1.0f, 1.0f},
-      Color4f{1.0f, 1.0f, 0.0f, 1.0f},
-      Color4f{0.0f, 1.0f, 0.0f, 1.0f},
-      Color4f{0.0f, 1.0f, 1.0f, 1.0f},
-      Color4f{0.5f, 0.5f, 0.0f, 1.0f},
-      Color4f{0.7f, 0.3f, 0.5f, 1.0f}
-  };
-}
-
-std::array<Color4f, 16> SimpleGuiDX11::get_pixel16(int x, int y, float) {
-  return {
-      Color4f{0.0f, 0.0f, 0.0f, 1.0f},
-      Color4f{0.1f, 0.0f, 0.5f, 1.0f},
-      Color4f{0.2f, 0.0f, 1.0f, 1.0f},
-      Color4f{0.3f, 0.0f, 0.0f, 1.0f},
-      Color4f{0.4f, 0.0f, 0.5f, 1.0f},
-      Color4f{0.5f, 0.0f, 1.0f, 1.0f},
-      Color4f{0.6f, 0.0f, 0.0f, 1.0f},
-      Color4f{0.7f, 0.0f, 0.5f, 1.0f},
-      Color4f{0.8f, 0.0f, 1.0f, 1.0f},
-      Color4f{0.9f, 0.0f, 0.0f, 1.0f},
-      Color4f{1.0f, 0.0f, 0.5f, 1.0f},
-      Color4f{0.9f, 0.0f, 1.0f, 1.0f},
-      Color4f{0.8f, 0.0f, 0.0f, 1.0f},
-      Color4f{0.7f, 0.0f, 0.5f, 1.0f},
-      Color4f{0.6f, 0.0f, 1.0f, 1.0f},
-      Color4f{0.5f, 0.0f, 0.0f, 1.0f}
-  };
+glm::vec4 SimpleGuiDX11::get_pixel(const int, const int, const float) {
+  return glm::vec4{1.0f, 0.0f, 1.0f, 1.0f};
 }
 
 void SimpleGuiDX11::Producer() {
@@ -143,86 +104,18 @@ void SimpleGuiDX11::Producer() {
     
     // compute rendering
     //std::this_thread::sleep_for( std::chrono::milliseconds( 50 ) );
-    
-    switch (multiRay_) {
-      case MultiRay::PIXEL_1x1: {
-//        #pragma omp parallel for num_threads(4)
+
 #pragma omp parallel for schedule(dynamic, 4) shared(local_data)
-        for (int y = 0; y < height_; ++y) {
-          for (int x = 0; x < width_; ++x) {
-            const Color4f pixel = get_pixel(x, y, t);
-            const int offset = (y * width_ + x) * 4;
-            
-            local_data[offset + 0] = c_srgb(pixel.r);
-            local_data[offset + 1] = c_srgb(pixel.g);
-            local_data[offset + 2] = c_srgb(pixel.b);
-            local_data[offset + 3] = c_srgb(pixel.a);
-            //pixel.copy( local_data[offset] );
-          }
-        }
-        break;
-      }
-      case MultiRay::PIXEL_2x2: {
-//        #pragma omp parallel for num_threads(4)
-#pragma omp parallel for schedule(dynamic, 4) shared(local_data)
-        for (int y = 0; y < height_; y += 2) {
-          for (int x = 0; x < width_; x += 2) {
-            std::array<Color4f, 4> pixels = get_pixel4(x, y, t);
-            int idx = 0;
-            for (int yo = 0; yo < 2; yo++) {
-              for (int xo = 0; xo < 2; xo++) {
-                const int offset = ((y + yo) * width_ + (x + xo)) * 4;
-                local_data[offset + 0] = c_srgb(pixels[idx].r);
-                local_data[offset + 1] = c_srgb(pixels[idx].g);
-                local_data[offset + 2] = c_srgb(pixels[idx].b);
-                local_data[offset + 3] = c_srgb(pixels[idx].a);
-                ++idx;
-              }
-            }
-          }
-        }
-        break;
-      }
-      case MultiRay::PIXEL_2x4: {
-//        #pragma omp parallel for num_threads(4)
-#pragma omp parallel for schedule(dynamic, 4) shared(local_data)
-        for (int y = 0; y < height_; y += 2) {
-          for (int x = 0; x < width_; x += 4) {
-            std::array<Color4f, 8> pixels = get_pixel8(x, y, t);
-            int idx = 0;
-            for (int yo = 0; yo < 2; yo++) {
-              for (int xo = 0; xo < 4; xo++) {
-                const int offset = ((y + yo) * width_ + (x + xo)) * 4;
-                local_data[offset + 0] = c_srgb(pixels[idx].r);
-                local_data[offset + 1] = c_srgb(pixels[idx].g);
-                local_data[offset + 2] = c_srgb(pixels[idx].b);
-                local_data[offset + 3] = c_srgb(pixels[idx].a);
-                ++idx;
-              }
-            }
-          }
-        }
-        break;
-      }
-      case MultiRay::PIXEL_4x4: {
-//        #pragma omp parallel for num_threads(4)
-#pragma omp parallel for schedule(dynamic, 4) shared(local_data)
-        for (int y = 0; y < height_; y += 4) {
-          for (int x = 0; x < width_; x += 4) {
-            std::array<Color4f, 16> pixels = get_pixel16(x, y, t);
-            int idx = 0;
-            for (int yo = 0; yo < 4; yo++) {
-              for (int xo = 0; xo < 4; xo++) {
-                const int offset = ((y + yo) * width_ + (x + xo)) * 4;
-                local_data[offset + 0] = c_srgb(pixels[idx].r);
-                local_data[offset + 1] = c_srgb(pixels[idx].g);
-                local_data[offset + 2] = c_srgb(pixels[idx].b);
-                local_data[offset + 3] = c_srgb(pixels[idx].a);
-                ++idx;
-              }
-            }
-          }
-        }
+    for (int y = 0; y < height_; ++y) {
+      for (int x = 0; x < width_; ++x) {
+        const glm::vec4 pixel = get_pixel(x, y, t);
+        const int offset = (y * width_ + x) * 4;
+        
+        local_data[offset + 0] = c_srgb(pixel.r, gamma_);
+        local_data[offset + 1] = c_srgb(pixel.g, gamma_);
+        local_data[offset + 2] = c_srgb(pixel.b, gamma_);
+        local_data[offset + 3] = 255;//c_srgb(pixel.a);
+        //pixel.copy( local_data[offset] );
       }
     }
     
@@ -530,3 +423,5 @@ LRESULT CALLBACK SimpleGuiDX11::s_WndProc(
   // thing. Hopefully, we didn't need to customize the behavior yet.
   return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
+
+#pragma clang diagnostic pop

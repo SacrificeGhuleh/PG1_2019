@@ -6,8 +6,8 @@
 #define PG1_2019_SPHERICALMAP_H
 
 #include <string>
-#include <math/vector.h>
-//#include <geometry/texture.h>
+#include <glm/vec3.hpp>
+
 #include <memory>
 
 class Texture;
@@ -18,7 +18,7 @@ public:
   
   virtual ~SphericalMap();
   
-  Color3f texel(const Vector3 &pos);
+  glm::vec3 texel(const glm::vec3 &pos);
 
 private:
   std::unique_ptr<Texture> texture_;

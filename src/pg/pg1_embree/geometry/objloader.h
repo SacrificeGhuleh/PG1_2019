@@ -1,10 +1,11 @@
 #ifndef OBJ_LOADER_H_
 #define OBJ_LOADER_H_
 
-#include <math/vector.h>
+#include <glm/vec3.hpp>
+
 #include <geometry/surface.h>
 
-/*! \fn int LoadOBJ( const char * file_name, Vector3 & default_color, std::vector<Surface *> & surfaces, std::vector<Material *> & materials )
+/*! \fn int LoadOBJ( const char * file_name, glm::vec3 & default_color, std::vector<Surface *> & surfaces, std::vector<Material *> & materials )
 \brief Načte geometrii z OBJ souboru \a file_name.
 \note Při exportu z 3ds max je nutné nastavit systémové jednotky na metry:
 Customize -> Units Setup Metric (Meters)
@@ -17,6 +18,6 @@ System Unit Setup -> 1 Unit = 1,0 m a zaškrtnout Respect System Units in File
 \param default_color výchozí barva vertexu.
 */
 int LoadOBJ(const char *file_name, std::vector<Surface *> &surfaces, std::vector<Material *> &materials,
-            bool flip_yz = false, Vector3 default_color = Vector3(0.5f, 0.5f, 0.5f));
+            bool flip_yz = false, glm::vec3 default_color = glm::vec3(0.5f, 0.5f, 0.5f));
 
 #endif

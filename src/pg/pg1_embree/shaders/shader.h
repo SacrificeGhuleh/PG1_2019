@@ -7,7 +7,9 @@
 
 #include <vector>
 #include <array>
-#include <math/vector.h>
+//#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 #include <engine/rtcrayhitior.h>
 
 class Material;
@@ -24,7 +26,7 @@ class SphericalMap;
 
 class PathTracerHelper;
 
-enum class SuperSamplingType : int{
+enum class SuperSamplingType : int {
   None = 0,
   Uniform,
   RandomFinite,
@@ -41,34 +43,12 @@ public:
          std::vector<Material *> *materials);
   
   //Gets one pixel
-  virtual Color4f getPixel(int x, int y);
-  
-  //Gets 2x2 pixels
-  virtual std::array<Color4f, 4> getPixel4(int x, int y);
-  
-  //Gets 2x4 pixels (2 height, 4 width)
-  virtual std::array<Color4f, 8> getPixel8(int x, int y);
-  
-  //Gets 4x4 pixels (4 height, 4 width)
-  virtual std::array<Color4f, 16> getPixel16(int x, int y);
-  
-  virtual Color4f traceRay(const RtcRayHitIor &rayHit, int depth);
+  virtual glm::vec4 getPixel(int x, int y);
   
   RtcRayHitIor shootRay(float x, float y);
   
-  RtcRayHitIor4 shootRay4(std::array<float, 4> &x, std::array<float, 4> &y);
   
-  RtcRayHitIor8 shootRay8(std::array<float, 8> &x, std::array<float, 8> &y);
-  
-  RtcRayHitIor16 shootRay16(std::array<float, 16> &x, std::array<float, 16> &y);
-  
-  RtcRayHitIor4 shootRay4(float x, float y);
-  
-  RtcRayHitIor8 shootRay8(float x, float y);
-  
-  RtcRayHitIor16 shootRay16(float x, float y);
-  
-  Color3f getDiffuseColor(const Material *material, const Coord2f &tex_coord);
+  glm::vec3 getDiffuseColor(const Material *material, const glm::vec2 &tex_coord);
   
   static float fresnel(float n1, float n2, float Q1, float Q2);
 
@@ -76,29 +56,19 @@ protected:
   
   RtcRayHitIor generateRay(const glm::vec3 &origin, const glm::vec3 &direction, float tnear = tNear_);
   
-  RtcRayHitIor4
-  generateRay4(const glm::vec3 &origin,
-               const std::array<const glm::vec3, 4> &direction,
-               float tnear = tNear_);
+  virtual glm::vec4 traceRay(const RtcRayHitIor &rayHit, int depth);
   
-  RtcRayHitIor8
-  generateRay8(const glm::vec3 &origin,
-               const std::array<const glm::vec3, 8> &direction,
-               float tnear = tNear_);
+  glm::vec4 getBackgroundColor(const RtcRayHitIor &rayHit);
   
-  RtcRayHitIor16
-  generateRay16(const glm::vec3 &origin,
-                const std::array<const glm::vec3, 16> &direction,
-                float tnear = tNear_);
   
-  Color4f getBackgroundColor(const RtcRayHitIor &rayHit);
+  glm::vec3 hemisphereSampling(const glm::vec3 &normal, float &pdf);
   
   Camera *camera_;
   Light *light_;
   RTCScene *rtcScene_;
   std::vector<Surface *> *surfaces_;
   std::vector<Material *> *materials_;
-  Color4f *defaultBgColor_;
+  glm::vec4 *defaultBgColor_;
   SphericalMap *sphericalMap_;
   
   
@@ -108,13 +78,13 @@ protected:
   
   float shadow(const glm::vec3 &pos, const glm::vec3 &lightDir, const float dist);
 
-  
+//should be pivate, but for debug...
 public:
   PathTracerHelper *pathTracerHelper;
   
   void setSphericalMap(SphericalMap *sphericalMap);
   
-  void setDefaultBgColor(Color4f *defaultBgColor);
+  void setDefaultBgColor(glm::vec4 *defaultBgColor);
   
   static bool flipTextureU_;
   static bool flipTextureV_;

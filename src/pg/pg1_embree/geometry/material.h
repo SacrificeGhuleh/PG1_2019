@@ -1,7 +1,6 @@
 #ifndef MATERIAL_H_
 #define MATERIAL_H_
-
-#include <math/vector.h>
+#include <glm/vec3.hpp>
 #include <geometry/texture.h>
 #include <shaders/shadingtype.h>
 
@@ -54,8 +53,8 @@ public:
   \param textures pole ukazatelů na textury.
   \param no_textures délka pole \a textures. Maximálně \a NO_TEXTURES - 1.
   */
-  Material(std::string &name, const Vector3 &ambient, const Vector3 &diffuse,
-           const Vector3 &specular, const Vector3 &emission, float reflectivity,
+  Material(std::string &name, const glm::vec3 &ambient, const glm::vec3 &diffuse,
+           const glm::vec3 &specular, const glm::vec3 &emission, float reflectivity,
            float shininess, float ior,
            Texture **textures = nullptr, int no_textures = 0);
   
@@ -94,13 +93,13 @@ public:
   Texture *get_texture(int slot) const;
 
 public:
-  Vector3 ambient; /*!< RGB barva prostředí \f$\left<0, 1\right>^3\f$. */
-  Vector3 diffuse; /*!< RGB barva rozptylu \f$\left<0, 1\right>^3\f$. */
-  Vector3 specular; /*!< RGB barva odrazu \f$\left<0, 1\right>^3\f$. */
+  glm::vec3 ambient; /*!< RGB barva prostředí \f$\left<0, 1\right>^3\f$. */
+  glm::vec3 diffuse; /*!< RGB barva rozptylu \f$\left<0, 1\right>^3\f$. */
+  glm::vec3 specular; /*!< RGB barva odrazu \f$\left<0, 1\right>^3\f$. */
   
-  Vector3 emission; /*!< RGB barva emise \f$\left<0, 1\right>^3\f$. */
+  glm::vec3 emission; /*!< RGB barva emise \f$\left<0, 1\right>^3\f$. */
   
-  Vector3 absorption; /*!< RGB absorpce, musi byt opacny k barve */
+  glm::vec3 absorption; /*!< RGB absorpce, musi byt opacny k barve */
   
   float shininess; /*!< Koeficient lesklosti (\f$\ge 0\f$). Čím je hodnota větší, tím se jeví povrch lesklejší. */
   

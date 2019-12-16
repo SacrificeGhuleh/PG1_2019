@@ -6,27 +6,26 @@
 #define PG1_2019_LIGHT_H
 
 
-#include <math/vector.h>
+#include <glm/vec3.hpp>
 
 class Light {
 public:
-  Light(const Vector3 &position, const Vector3 &color) : position_{position}, color_{color} {}
+  Light(const glm::vec3 &position, const glm::vec3 &color) : position_{position}, color_{color} {}
   
   virtual ~Light();
 
-private:
-  Vector3 position_;
-public:
-  const Vector3 &getPosition() const {
+//private:
+  const glm::vec3 &getPosition() const {
     return position_;
   }
   
-  const Vector3 &getColor() const {
+  const glm::vec3 &getColor() const {
     return color_;
   }
 
-private:
-  Vector3 color_;
+//private:
+  glm::vec3 color_;
+  glm::vec3 position_;
 };
 
 

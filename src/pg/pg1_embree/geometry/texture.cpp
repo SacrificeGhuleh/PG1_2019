@@ -104,7 +104,7 @@ Texture::~Texture() {
   }
 }
 
-Color3f Texture::get_texel(const float u, const float v) const {
+glm::vec3 Texture::get_texel(const float u, const float v) const {
 //    assert( ( u >= 0.0f && u <= 1.0f ) && ( v >= 0.0f && v <= 1.0f ) );
   
   const unsigned int x = std::max(0.f, std::min(static_cast<float>(width_) - 1.f, (u * static_cast<float>(width_))));
@@ -152,7 +152,7 @@ Color3f Texture::get_texel(const float u, const float v) const {
   }
   
   
-  return /*c_linear*/(Color3f{r, g, b/*,a*/});
+  return /*c_linear*/(glm::vec3{r, g, b/*,a*/});
 
 //
 //  const unsigned int x = std::max(0.f, std::min(static_cast<float>(width_) - 1.f, (u * static_cast<float>(width_))));
@@ -194,13 +194,13 @@ Color3f Texture::get_texel(const float u, const float v) const {
 //  g *= static_cast<float>(1.0 / 255.0);
 //  r *= static_cast<float>(1.0 / 255.0);
 
-//  Color4f final_color = (Color4f(p1[0], p1[1], p1[2], p1[3]) * (1 - kx) * (1 - ky) +
-//                         Color4f(p2[0], p2[1], p2[2], p2[3]) * kx * (1 - ky) +
-//                         Color4f(p3[0], p3[1], p3[2], p3[3]) * kx * ky +
-//                         Color4f(p4[0], p4[1], p4[2], p4[3]) * (1 - kx) * ky) *
+//  glm::vec4 final_color = (glm::vec4(p1[0], p1[1], p1[2], p1[3]) * (1 - kx) * (1 - ky) +
+//                         glm::vec4(p2[0], p2[1], p2[2], p2[3]) * kx * (1 - ky) +
+//                         glm::vec4(p3[0], p3[1], p3[2], p3[3]) * kx * ky +
+//                         glm::vec4(p4[0], p4[1], p4[2], p4[3]) * (1 - kx) * ky) *
 //                        static_cast<float>(1.0 / 255.0);
 //  
-  return c_linear(Color3f{r, g, b});
+  return c_linear(glm::vec3{r, g, b});
 }
 
 unsigned int Texture::width() const {

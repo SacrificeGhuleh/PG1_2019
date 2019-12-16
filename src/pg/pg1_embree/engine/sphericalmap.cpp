@@ -18,7 +18,7 @@ SphericalMap::SphericalMap(const std::string &filename) {
   assert(texture_->width() != 0);
 }
 
-Color3f SphericalMap::texel(const Vector3 &pos) {
+glm::vec3 SphericalMap::texel(const glm::vec3 &pos) {
   float theta = acosf(clamp(pos.z, -1.f, 1.f));
   float phi = atan2f(pos.y, pos.x) + static_cast<float>(M_PI);
   
@@ -26,7 +26,7 @@ Color3f SphericalMap::texel(const Vector3 &pos) {
   float v = theta * static_cast<float>(M_1_PI);
   
   return texture_->get_texel(u, v);
-//  return Color3f(0, 1, 0);
+//  return glm::vec3(0, 1, 0);
 }
 
 SphericalMap::~SphericalMap() {

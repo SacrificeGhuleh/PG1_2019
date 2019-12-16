@@ -2,7 +2,7 @@
 #include <engine/camera.h>
 
 Camera::Camera(const int width, const int height, const float fov_y,
-               const Vector3 &view_from, const Vector3 view_at) {
+               const glm::vec3 &view_from, const glm::vec3 view_at) {
   width_ = width;
   height_ = height;
   fov_y_ = fov_y;
@@ -17,7 +17,7 @@ Camera::Camera(const int width, const int height, const float fov_y,
 
 RTCRay Camera::GenerateRay(const float x_i, const float y_i) {
   RTCRay ray = RTCRay();
-  Vector3 dc_w = getRayDirection(x_i, y_i);
+  glm::vec3 dc_w = getRayDirection(x_i, y_i);
   
   ray.org_x = view_from_.x; // ray origin
   ray.org_y = view_from_.y;
@@ -50,17 +50,17 @@ float Camera::getFovY() const {
   return fov_y_;
 }
 
-const Vector3 &Camera::getViewFrom() const {
+const glm::vec3 &Camera::getViewFrom() const {
   
   
   return view_from_;
 }
 
-const Vector3 &Camera::getViewAt() const {
+const glm::vec3 &Camera::getViewAt() const {
   return view_at_;
 }
 
-const Vector3 &Camera::getUp() const {
+const glm::vec3 &Camera::getUp() const {
   return up_;
 }
 
@@ -69,11 +69,11 @@ float Camera::getFY() const {
 }
 
 const glm::mat3 &Camera::getMCW() {
-  Vector3 z_c = view_from_ - view_at_;
+  glm::vec3 z_c = view_from_ - view_at_;
   z_c = glm::normalize(z_c);
-  Vector3 x_c = glm::cross(up_, z_c);
+  glm::vec3 x_c = glm::cross(up_, z_c);
   x_c = glm::normalize(x_c);
-  Vector3 y_c = glm::cross(z_c, x_c);
+  glm::vec3 y_c = glm::cross(z_c, x_c);
   y_c = glm::normalize(y_c);
   
   M_c_w_ = glm::mat3(x_c, y_c, z_c);
@@ -81,8 +81,8 @@ const glm::mat3 &Camera::getMCW() {
   return M_c_w_;
 }
 
-const Vector3 Camera::getRayDirection(const float x_i, const float y_i) {
-  Vector3 dc = Vector3((x_i - (static_cast<float>(width_) * 0.5f)),
+const glm::vec3 Camera::getRayDirection(const float x_i, const float y_i) {
+  glm::vec3 dc = glm::vec3((x_i - (static_cast<float>(width_) * 0.5f)),
                        (static_cast<float>(height_) * 0.5f) - y_i,
                        -f_y_);
   dc = glm::normalize(dc);

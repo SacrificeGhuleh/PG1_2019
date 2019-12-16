@@ -42,6 +42,10 @@
 #include <glm/geometric.hpp>
 #include <glm/gtx/norm.hpp>
 
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+
 #endif
 
 static uint32_t totalAllocations = 0;

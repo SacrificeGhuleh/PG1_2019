@@ -196,7 +196,7 @@ int LoadMTL(const char *file_name, const char *path, std::vector<Material *> &ma
 }
 
 int LoadOBJ(const char *file_name, std::vector<Surface *> &surfaces, std::vector<Material *> &materials,
-            const bool flip_yz, const Vector3 default_color) {
+            const bool flip_yz, const glm::vec3 default_color) {
   // otevření soouboru
   FILE *file = fopen(file_name, "rt");
   if (file == NULL) {
@@ -270,9 +270,9 @@ int LoadOBJ(const char *file_name, std::vector<Surface *> &surfaces, std::vector
     LoadMTL(material_libraries[i].c_str(), path, materials);
   }
   
-  std::vector<Vector3> vertices; // celý jeden soubor
-  std::vector<Vector3> per_vertex_normals;
-  std::vector<Coord2f> texture_coords;
+  std::vector<glm::vec3> vertices; // celý jeden soubor
+  std::vector<glm::vec3> per_vertex_normals;
+  std::vector<glm::vec2> texture_coords;
   
   line = strtok(buffer, delim);
   
@@ -284,7 +284,7 @@ int LoadOBJ(const char *file_name, std::vector<Surface *> &surfaces, std::vector
         switch (line[1]) {
           case ' ': // vertex
           {
-            Vector3 vertex;
+            glm::vec3 vertex;
             if (flip_yz) {
               //float x, y, z;
               sscanf(line, "%*s %f %f %f", &vertex.x, &vertex.z, &vertex.y);
@@ -299,7 +299,7 @@ int LoadOBJ(const char *file_name, std::vector<Surface *> &surfaces, std::vector
           
           case 'n': // normála vertexu
           {
-            Vector3 normal;
+            glm::vec3 normal;
             if (flip_yz) {
               //float x, y, z;
               sscanf(line, "%*s %f %f %f", &normal.x, &normal.z, &normal.y);
@@ -315,7 +315,7 @@ int LoadOBJ(const char *file_name, std::vector<Surface *> &surfaces, std::vector
           
           case 't': // texturovací souřadnice
           {
-            Coord2f texture_coord;
+            glm::vec2 texture_coord;
             float z = 0;
             sscanf(line, "%*s %f %f %f",
                    &texture_coord.x, &texture_coord.y, &z);

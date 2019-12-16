@@ -1,7 +1,7 @@
 #ifndef CAMERA_H_
 #define CAMERA_H_
 
-#include <math/vector.h>
+#include <glm/vec3.hpp>
 
 /*! \class Camera
 \brief A simple pin-hole camera.
@@ -15,7 +15,7 @@ public:
   Camera() = default;
   
   Camera(int width, int height, float fov_y,
-         const Vector3 &view_from, Vector3 view_at);
+         const glm::vec3 &view_from, glm::vec3 view_at);
   
   virtual ~Camera();
   
@@ -29,28 +29,28 @@ public:
   
   float getFovY() const;
   
-  const Vector3 getRayDirection(float x_i, float y_i);
+  const glm::vec3 getRayDirection(float x_i, float y_i);
   
-  const Vector3 &getViewFrom() const;
+  const glm::vec3 &getViewFrom() const;
   
-  const Vector3 &getViewAt() const;
+  const glm::vec3 &getViewAt() const;
   
-  const Vector3 &getUp() const;
+  const glm::vec3 &getUp() const;
   
   float getFY() const;
   
   const glm::mat3 &getMCW();
   
-  Vector3 view_from_{}; // ray origin or eye or O
+  glm::vec3 view_from_{}; // ray origin or eye or O
   float f_y_{1.0f}; // focal lenght (px)
-  Vector3 view_at_{}; // target T
+  glm::vec3 view_at_{}; // target T
 private:
   
   int width_{640}; // image width (px)
   int height_{480};  // image height (px)
   float fov_y_{0.785f}; // vertical field of view (rad)
   
-  Vector3 up_{Vector3(0.0f, 0.0f, 1.0f)}; // up vector
+  glm::vec3 up_{glm::vec3(0.0f, 0.0f, 1.0f)}; // up vector
   
   glm::mat3 M_c_w_{}; // transformation matrix from CS -> WS
 };

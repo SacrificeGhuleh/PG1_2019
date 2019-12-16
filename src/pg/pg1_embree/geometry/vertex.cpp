@@ -1,7 +1,7 @@
 #include <stdafx.h>
 #include <geometry/vertex.h>
 
-Vertex::Vertex(const Vector3 position, const Vector3 normal, Vector3 color, Coord2f *texture_coords) {
+Vertex::Vertex(const glm::vec3 position, const glm::vec3 normal, glm::vec3 color, glm::vec2 *texture_coords) {
   this->position = position;
   this->normal = normal;
   this->color = color;

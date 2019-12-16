@@ -9,13 +9,13 @@ const char Material::kOpacityMapSlot = 3;
 
 Material::Material() {
   // defaultní materiál
-  ambient = Vector3(0.1f, 0.1f, 0.1f);
-  diffuse = Vector3(0.4f, 0.4f, 0.4f);
-  specular = Vector3(0.8f, 0.8f, 0.8f);
+  ambient = glm::vec3(0.1f, 0.1f, 0.1f);
+  diffuse = glm::vec3(0.4f, 0.4f, 0.4f);
+  specular = glm::vec3(0.8f, 0.8f, 0.8f);
   
-  emission = Vector3(0.0f, 0.0f, 0.0f);
+  emission = glm::vec3(0.0f, 0.0f, 0.0f);
   
-  absorption = Vector3(0.f, 0.f, 0.f);
+  absorption = glm::vec3(0.f, 0.f, 0.f);
   
   reflectivity = static_cast<float>( 0.99 );
   shininess = 1;
@@ -27,13 +27,13 @@ Material::Material() {
   name_ = "default";
 }
 
-Material::Material(std::string &name, const Vector3 &ambient, const Vector3 &diffuse,
-                   const Vector3 &specular, const Vector3 &emission, const float reflectivity,
+Material::Material(std::string &name, const glm::vec3 &ambient, const glm::vec3 &diffuse,
+                   const glm::vec3 &specular, const glm::vec3 &emission, const float reflectivity,
                    const float shininess, const float ior, Texture **textures, const int no_textures) {
   name_ = name;
   
   this->ambient = ambient;
-  this->diffuse = c_linear(diffuse);
+  this->diffuse = /*c_linear*/(diffuse);
   this->specular = specular;
   
   this->emission = emission;

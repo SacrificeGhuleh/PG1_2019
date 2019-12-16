@@ -11,6 +11,8 @@ int tutorial_3(std::string file_name, const char *config = "threads=0,verbose=0"
 
 int staticSceneSphere(const char *config = "threads=0,verbose=0");
 
+int staticScenePathTracerSphere(const char *config = "threads=0,verbose=0");
+
 int staticSceneGeoSpheres(const char *config = "threads=0,verbose=0");
 
 int staticSceneShip(const char *config = "threads=0,verbose=0");

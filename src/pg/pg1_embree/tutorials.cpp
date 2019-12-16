@@ -1,4 +1,5 @@
 #include <stdafx.h>
+#include "tutorials.h"
 #include <engine/raytracer.h>
 #include <utils/structs.h>
 #include <geometry/texture.h>
@@ -30,8 +31,8 @@ unsigned int add_triangle(const RTCDevice device, RTCScene scene) {
   // and depending on the geometry type, different buffers must be bound (typically, vertex and index buffer is required)
   
   // set vertices in the newly created buffer
-  Vertex3f *vertices = (Vertex3f *) rtcSetNewGeometryBuffer(
-      mesh, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(Vertex3f), 3);
+  glm::vec3 *vertices = (glm::vec3 *) rtcSetNewGeometryBuffer(
+      mesh, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, sizeof(glm::vec3), 3);
   vertices[0].x = 0;
   vertices[0].y = 0;
   vertices[0].z = 0;
@@ -62,8 +63,8 @@ unsigned int add_triangle(const RTCDevice device, RTCScene scene) {
   rtcSetGeometryVertexAttributeCount(mesh, 2);
   
   // set vertex normals
-  Normal3f *normals = (Normal3f *) rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 0, RTC_FORMAT_FLOAT3,
-                                                           sizeof(Normal3f), 3);
+  glm::vec3 *normals = (glm::vec3 *) rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 0, RTC_FORMAT_FLOAT3,
+                                                           sizeof(glm::vec3), 3);
   normals[0].x = 0;
   normals[0].y = 0;
   normals[0].z = 1;
@@ -75,8 +76,8 @@ unsigned int add_triangle(const RTCDevice device, RTCScene scene) {
   normals[2].z = 1;
   
   // set texture coordinates
-  Coord2f *tex_coords = (Coord2f *) rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 1,
-                                                            RTC_FORMAT_FLOAT2, sizeof(Coord2f), 3);
+  glm::vec2 *tex_coords = (glm::vec2 *) rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 1,
+                                                            RTC_FORMAT_FLOAT2, sizeof(glm::vec2), 3);
   tex_coords[0].x = 0;
   tex_coords[0].y = 1;
   tex_coords[1].x = 1;
@@ -136,12 +137,12 @@ int generate_and_trace_ray(RTCScene &scene) {
   if (ray_hit.hit.geomID != RTC_INVALID_GEOMETRY_ID) {
     // we hit something
     RTCGeometry geometry = rtcGetGeometry(scene, ray_hit.hit.geomID);
-    Normal3f normal;
+    glm::vec3 normal;
     // get interpolated normal
     rtcInterpolate0(geometry, ray_hit.hit.primID, ray_hit.hit.u, ray_hit.hit.v,
                     RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 0, &normal.x, 3);
     // and texture coordinates
-    Coord2f tex_coord;
+    glm::vec2 tex_coord;
     rtcInterpolate0(geometry, ray_hit.hit.primID, ray_hit.hit.u, ray_hit.hit.v,
                     RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 1, &tex_coord.x, 2);
     
@@ -183,7 +184,7 @@ int tutorial_1(const char *config) {
 int tutorial_2() {
   // create texture
   Texture texture("data/test4.png");
-  Color3f texel = texture.get_texel((1.0f / texture.width()) * 2.5f, 0.0f);
+  glm::vec3 texel = texture.get_texel((1.0f / texture.width()) * 2.5f, 0.0f);
   printf("(r = %0.3f, g = %0.3f, b = %0.3f)\n", texel.r, texel.g, texel.b);
   
   return EXIT_SUCCESS;
@@ -198,18 +199,18 @@ int tutorial_3(const std::string file_name, const char *config) {
       640,
       480,
       deg2rad(45.0),
-      Vector3(175, -140, 130),
-      Vector3(0, 0, 35),
-      Vector3(200, 300, 400),
-      Vector3(1.f),
+      glm::vec3(175, -140, 130),
+      glm::vec3(0, 0, 35),
+      glm::vec3(200, 300, 400),
+      glm::vec3(1.f),
       config);
 
 //  Raytracer raytracer(
 //      640,
 //      480,
 //      deg2rad(45.0),
-//      Vector3(5, 0, 0),
-//      Vector3(0, 0, 0),
+//      glm::vec3(5, 0, 0),
+//      glm::vec3(0, 0, 0),
 //      config);
   
   raytracer.LoadScene(file_name);
@@ -223,13 +224,30 @@ int staticSceneSphere(const char *config) {
       640,
       480,
       deg2rad(45.0),
-      Vector3(5, 0, 0),
-      Vector3(0, 0, 0),
-      Vector3(200, 300, 400),
-      Vector3(1.f),
+      glm::vec3(5, 0, 0),
+      glm::vec3(0, 0, 0),
+      glm::vec3(200, 300, 400),
+      glm::vec3(1.f),
       config);
   
   raytracer.LoadScene("data/geosphere.obj");
+  raytracer.MainLoop();
+  
+  return EXIT_SUCCESS;
+}
+
+int staticScenePathTracerSphere(const char *config){
+  Raytracer raytracer(
+      640,
+      480,
+      deg2rad(45.0),
+      glm::vec3(5, 0, 0),
+      glm::vec3(0, 0, 0),
+      glm::vec3(200, 300, 400),
+      glm::vec3(1.f),
+      config);
+  
+  raytracer.LoadScene("data/geospherePathTracing.obj");
   raytracer.MainLoop();
   
   return EXIT_SUCCESS;
@@ -240,10 +258,10 @@ int staticSceneGeoSpheres(const char *config) {
       640 * 2,
       480 * 2,
       deg2rad(45.0),
-      Vector3(0, -1, 20),
-      Vector3(0, 0, 0),
-      Vector3(200, 300, 400),
-      Vector3(1.f),
+      glm::vec3(0, -1, 20),
+      glm::vec3(0, 0, 0),
+      glm::vec3(200, 300, 400),
+      glm::vec3(1.f),
       config);
   
   raytracer.LoadScene("data/geospheres_5x5.obj");
@@ -254,13 +272,13 @@ int staticSceneGeoSpheres(const char *config) {
 
 int staticSceneShip(const char *config) {
   Raytracer raytracer(
-      640,
-      480,
+      640*2,
+      480*2,
       deg2rad(45.0),
-      Vector3(175, -140, 130),
-      Vector3(0, 0, 35),
-      Vector3(200, 300, 400),
-      Vector3(1.f),
+      glm::vec3(175, -140, 130),
+      glm::vec3(0, 0, 35),
+      glm::vec3(200, 300, 400),
+      glm::vec3(1.f),
       config);
   
   
@@ -271,15 +289,15 @@ int staticSceneShip(const char *config) {
 }
 
 
-int staticSceneCornellbox(const char *config = "threads=0,verbose=0") {
+int staticSceneCornellbox(const char *config) {
   Raytracer raytracer(
       320,
       240,
       deg2rad(40.0),
-      Vector3(0, -940, 250),
-      Vector3(0, 0, 250),
-      Vector3(0, 0, 300),
-      Vector3(1.f),
+      glm::vec3(0, -940, 250),
+      glm::vec3(0, 0, 250),
+      glm::vec3(0, 0, 300),
+      glm::vec3(1.f),
       config);
   
   raytracer.LoadScene("data/cornell_box2.obj");
@@ -288,15 +306,15 @@ int staticSceneCornellbox(const char *config = "threads=0,verbose=0") {
   return EXIT_SUCCESS;
 }
 
-int staticSceneCornellboxMirrorTest(const char *config = "threads=0,verbose=0") {
+int staticSceneCornellboxMirrorTest(const char *config) {
   Raytracer raytracer(
       320,
       240,
       deg2rad(40.0),
-      Vector3(0, -350, 250),
-      Vector3(0, 105, 103),
-      Vector3(0, 0, 300),
-      Vector3(1.f),
+      glm::vec3(0, -350, 250),
+      glm::vec3(0, 105, 103),
+      glm::vec3(0, 0, 300),
+      glm::vec3(1.f),
       config);
   
   raytracer.LoadScene("data/cornell_box2.obj");
