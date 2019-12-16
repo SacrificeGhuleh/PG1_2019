@@ -395,10 +395,12 @@ glm::vec4 CommonShader::traceMaterial<ShadingType::Phong>(const RtcRayHitIor &ra
   
   //specular
   //I - N * dot(N, I) * 2
-  glm::vec3 lightReflectDir = glm::reflect(lightDir, shaderNormal);
+  //glm::vec3 lightReflectDir = glm::reflect(lightDir, shaderNormal);
+//  float spec = powf(glm::dot(direction, lightReflectDir), material->shininess);
   
-  
-  float spec = powf(glm::dot(direction, lightReflectDir), material->shininess);
+  //blinn-phong lightning
+  glm::vec3 halfwayDir = glm::normalize(lightDir + direction);
+  float spec = powf(std::max<float>(glm::dot(shaderNormal, halfwayDir), 0.0), material->shininess);
   
   glm::vec3 specular = material->specular * spec;
 
