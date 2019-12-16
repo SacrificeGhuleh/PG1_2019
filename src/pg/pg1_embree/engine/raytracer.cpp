@@ -20,6 +20,7 @@
 
 #include <utils/stb_image_write.h>
 #include <csignal>
+#include <iomanip>
 
 
 Raytracer::Raytracer(const int width,
@@ -304,24 +305,32 @@ int Raytracer::Ui() {
         ImGui::Checkbox("Save to file", &saveToFile);
         
         if (saveToFile) {
-          std::string filename = std::string("out/path tracing - samples ");
-          filename.append(std::to_string(traces));
-          filename.append(".png");
-          if (traces > 0) {
-            if (traces < 100) {
-              if (traces % 10 == 0 && lastSaved < traces) {
-                saveImage(filename);
-              }
-            } else if (traces < 1000) {
-              if (traces % 100 == 0 && lastSaved < traces) {
-                saveImage(filename);
-              }
-            } else {
-              if (traces % 1000 == 0 && lastSaved < traces) {
-                saveImage(filename);
-              }
-            }
+          bool shallSave =
+              (traces > 0 && traces < 100  && traces % 10   == 0 && lastSaved < traces) ||
+              (traces > 0 && traces < 1000 && traces % 100  == 0 && lastSaved < traces) ||
+              (traces > 0                  && traces % 1000 == 0 && lastSaved < traces);
+          
+          if (shallSave) {
+            
+            auto t = std::time(nullptr);
+            auto tm = *std::localtime(&t);
+            
+            std::ostringstream oss;
+            oss << std::put_time(&tm, "%d-%m-%Y %H-%M-%S");
+            
+            std::string filename = std::string("out/");
+            filename.append(oss.str());
+            filename.append(" ");
+            filename.append(shadingArray[currentShadingIdx_].first);
+            filename.append(" shader ");
+            filename.append(std::to_string(traces));
+            filename.append(" samples");
+            filename.append(".png");
+            
+            saveImage(filename);
+            lastSaved = traces;
           }
+          
         }
         break;
       }
@@ -397,7 +406,7 @@ void Raytracer::saveImage(const std::string &filename) {
         writeArray[offset + 0] = tex_data_[offset + 0] * 255;
         writeArray[offset + 1] = tex_data_[offset + 1] * 255;
         writeArray[offset + 2] = tex_data_[offset + 2] * 255;
-        writeArray[offset + 3] = tex_data_[offset + 3] * 255;
+        writeArray[offset + 3] = 255;//tex_data_[offset + 3] * 255;
       }
     }
     
