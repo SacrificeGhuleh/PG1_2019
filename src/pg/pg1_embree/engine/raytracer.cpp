@@ -44,7 +44,7 @@ Raytracer::Raytracer(const int width,
   defaultBgColor_ = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
   
   light_ = new Light(lightPos, lightColor);
-
+  
   sphericalMap_ = new SphericalMap("data/venice_sunset.jpg");
 //  sphericalMap_ = new SphericalMap("data/field.jpg");
 //  sphericalMap_ = new SphericalMap("data/outdoor_umbrellas_4k.hdr");
@@ -216,9 +216,24 @@ int Raytracer::Ui() {
     switch (shadingArray[currentShadingIdx_].second) {
       
       case ShadingType::None: {
+        ImGui::Separator();
+        ImGui::Text("Lambert/Phong: ");
+        ImGui::Checkbox("Soft shadows", &CommonShader::softShadows);
+        
+        if (CommonShader::softShadows) {
+          ImGui::DragInt("Shadow samples", &CommonShader::lightShadowsSamples);
+        }
+        ImGui::Separator();
         break;
       }
       case ShadingType::Lambert: {
+        ImGui::Checkbox("Soft shadows", &CommonShader::softShadows);
+        
+        if (CommonShader::softShadows) {
+          ImGui::DragInt("Shadow samples", &CommonShader::lightShadowsSamples);
+        }
+        ImGui::Separator();
+        
         break;
       }
       case ShadingType::Glass: {

@@ -293,8 +293,34 @@ glm::vec4 CommonShader::traceMaterial<ShadingType::Lambert>(const RtcRayHitIor &
                                                             const glm::vec3 &shaderNormal,
                                                             const float dotNormalCamera,
                                                             const int depth) {
+  glm::vec3 diffuse = dotNormalCamera * getDiffuseColor(material, tex_coord);
   
-  return glm::vec4(0.f, 0.f, 1.f, 1.f);
+  //shadow
+  float shadowVal = 1;
+  float pdf = 0;
+  
+  if (softShadows) {
+    
+    shadowVal += shadow(worldPos, lightDir, glm::l2Norm(lightPos - worldPos));
+    
+    for (int i = 0; i < lightShadowsSamples; i++) {
+      const glm::vec3 lDir = hemisphereSampling(lightDir, pdf);
+      shadowVal += shadow(worldPos, lDir, glm::l2Norm(lightPos - worldPos));
+    }
+    
+    shadowVal /= static_cast<float>(lightShadowsSamples + 1);
+  } else {
+    //hard shadow
+    shadowVal = shadow(worldPos, lightDir, glm::l2Norm(lightPos));
+  }
+  
+  const float dotNormalLight = glm::dot(shaderNormal, lightDir);
+  
+  return glm::vec4(
+      ((diffuse.x * shadowVal * dotNormalLight)),
+      ((diffuse.y * shadowVal * dotNormalLight)),
+      ((diffuse.z * shadowVal * dotNormalLight)),
+      1);
 }
 
 template<>
@@ -310,10 +336,6 @@ glm::vec4 CommonShader::traceMaterial<ShadingType::Mirror>(const RtcRayHitIor &r
                                                            const glm::vec3 &shaderNormal,
                                                            const float dotNormalCamera,
                                                            const int depth) {
-  
-  
-  
-  
   //I - N * dot(N, I) * 2
   glm::vec3 reflectDir = glm::reflect(direction, shaderNormal);
   
@@ -339,31 +361,18 @@ glm::vec4 CommonShader::traceMaterial<ShadingType::Phong>(const RtcRayHitIor &ra
                                                           const int depth) {
   
   
+  glm::vec4 reflected = traceMaterial<ShadingType::Mirror>(rayHit, material, tex_coord, origin, direction, worldPos,
+                                                           directionToCamera, lightPos, lightDir, shaderNormal,
+                                                           dotNormalCamera, depth);
+  
+  if (material->reflectivity >= 1.0) {
+    return reflected;
+  }
+  
   //ambient
   glm::vec3 ambient = material->ambient;
   
   //diffuse
-  glm::vec3 diffuse = dotNormalCamera * getDiffuseColor(material, tex_coord);
-  
-  //specular
-  glm::vec3 phongReflectDir = glm::reflect(lightDir, shaderNormal);
-  float spec = powf(glm::dot(direction, phongReflectDir), material->shininess);
-  
-  const glm::vec3 reflectDir = glm::normalize(
-      (2.f * (directionToCamera * shaderNormal)) * shaderNormal - directionToCamera);
-  
-  
-  glm::vec3 specular = material->specular * spec;
-  /*if (depth <= 0) {
-    specular = glm::vec3(spec);
-  } else {
-    RtcRayHitIor reflectedRayHit = generateRay(worldPos, reflectDir, tNear_);
-    
-    glm::vec4 reflected = traceRay(reflectedRayHit, depth - 1);
-    specular = glm::vec3(reflected.x * spec, reflected.y * spec, reflected.z * spec);
-  }*/
-  
-  //shadow
   float shadowVal = 0;
   float pdf = 0;
   
@@ -382,12 +391,19 @@ glm::vec4 CommonShader::traceMaterial<ShadingType::Phong>(const RtcRayHitIor &ra
     shadowVal = shadow(worldPos, lightDir, glm::l2Norm(lightPos));
   }
   
+  glm::vec3 diffuse = shadowVal * dotNormalCamera * getDiffuseColor(material, tex_coord);
   
-  return glm::vec4(
-      ((shadowVal * diffuse.x) + specular.x),
-      ((shadowVal * diffuse.y) + specular.y),
-      ((shadowVal * diffuse.z) + specular.z),
-      1);
+  //specular
+  //I - N * dot(N, I) * 2
+  glm::vec3 lightReflectDir = glm::reflect(lightDir, shaderNormal);
+  
+  
+  float spec = powf(glm::dot(direction, lightReflectDir), material->shininess);
+  
+  glm::vec3 specular = material->specular * spec;
+
+  
+  return glm::vec4(diffuse + specular * spec , 1) + (reflected * material->reflectivity/* * spec*/);
 }
 
 template<>
@@ -453,7 +469,10 @@ glm::vec4 CommonShader::traceMaterial<ShadingType::Normals>(const RtcRayHitIor &
   
   //Debug dot normal
 //  return glm::vec4(glm::vec3(dotNormalCamera), 1.0f);
-  return glm::vec4(shaderNormal, 1.0f);
+  return glm::vec4((shaderNormal.x + 1.f) / 2.f,
+                   (shaderNormal.x + 1.f) / 2.f,
+                   (shaderNormal.x + 1.f) / 2.f,
+                   1.0f);
 }
 
 template<>

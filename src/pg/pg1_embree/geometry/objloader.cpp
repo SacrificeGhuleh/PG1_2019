@@ -116,7 +116,11 @@ int LoadMTL(const char *file_name, const char *path, std::vector<Material *> &ma
         {
           sscanf(tmp, "%*s %f %f %f", &material->ambient.x, &material->ambient.y, &material->ambient.z);
         }
-        if (strstr(tmp, "Kabs") == tmp) // ambient color of the material
+        if (strstr(tmp, "Kr") == tmp) // Reflectivity of the material
+        {
+          sscanf(tmp, "%*s %f", &material->reflectivity);
+        }
+        if (strstr(tmp, "Kb") == tmp) // Absorption of the material
         {
           sscanf(tmp, "%*s %f %f %f", &material->absorption.x, &material->absorption.y, &material->absorption.z);
         }

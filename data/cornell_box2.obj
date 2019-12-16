@@ -4198,7 +4198,7 @@ vt 0.968750 -0.000000 0.000000
 
 o Sphere002
 g Sphere002
-usemtl white_lambert
+usemtl gold_phong
 s 1
 f 511/592/492 512/593/493 513/594/494 
 f 511/595/492 513/594/494 514/596/495 

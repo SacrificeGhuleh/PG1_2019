@@ -291,12 +291,12 @@ int staticSceneShip(const char *config) {
 
 int staticSceneCornellbox(const char *config) {
   Raytracer raytracer(
-      320 * 2,
-      240 * 2,
+      320 ,
+      240 ,
       deg2rad(40.0),
       glm::vec3(0, -940, 250),
       glm::vec3(0, 0, 250),
-      glm::vec3(0, 0, 300),
+      glm::vec3(0, 0, 370),
       glm::vec3(1.f),
       config);
   

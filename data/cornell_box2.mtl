@@ -10,8 +10,9 @@ newmtl white_lambert
 	Ka 0.1 0.1 0.1
 	Kd 0.95 0.95 0.95
 	Ks 0.0 0.0 0.0
-  Ke 0.0 0.0 0.0  
-  shader 5
+    Ke 0.0 0.0 0.0
+	Kr 0.1
+    shader 5
 
 newmtl red_lambert
 	Ns 32
@@ -22,8 +23,9 @@ newmtl red_lambert
 	Ka 0.1 0.1 0.1
 	Kd 0.95 0.05 0.05
 	Ks 0.0 0.0 0.0
-  Ke 0.0 0.0 0.0
-  shader 5
+    Ke 0.0 0.0 0.0
+	Kr 0.1
+    shader 5
 
 newmtl green_lambert
 	Ns 32
@@ -34,28 +36,31 @@ newmtl green_lambert
 	Ka 0.1 0.1 0.1
 	Kd 0.05 0.95 0.05
 	Ks 0.0 0.0 0.0
-  Ke 0.0 0.0 0.0
-  shader 5
+    Ke 0.0 0.0 0.0
+	Kr 0.1
+    shader 5
 
 newmtl white_light
-  Ka 0.1 0.1 0.1
+    Ka 0.1 0.1 0.1
 	Kd 1.0 0.0 0.0
 	Ks 1.0 1.0 1.0
-  Ke 20.0 20.0 20.0
-  shader 5
+    Ke 20.0 20.0 20.0
+	Kr 0.1
+    shader 5
 
 newmtl white_phong
 	Ns 32
-  Ni 1.460
+    Ni 1.460
 	d 1
 	Tr 0
 	Tf 1 1 1
 	illum 2
-  Ka 0.2 0.2 0.2
+    Ka 0.2 0.2 0.2
 	Kd 0.8 0.8 0.8
 	Ks 0.8 0.8 0.8
-  Ke 0.0 0.0 0.0
-  shader 7
+    Ke 0.0 0.0 0.0
+	Kr 0.1
+    shader 7
 
 newmtl mirror
 	Ns 32
@@ -63,14 +68,16 @@ newmtl mirror
 	Tr 0
 	Tf 1 1 1
 	illum 2
-  Ka 0.1 0.1 0.1
+    Ka 0.1 0.1 0.1
 	Kd 0.0 0.0 1.0
 	Ks 1.0 1.0 1.0
-  shader 6
+	Kr 1
+    shader 6
   
 newmtl clear_glass	
 	Kd 0.01 0.01 0.01  	   
 	ior 1.5
+	Kr 0.1
 	shader 4
 
 newmtl green_plastic_transparent
@@ -82,6 +89,20 @@ newmtl green_plastic_transparent
 	Ka 0.03 0.03 0.03
 	Kd 0.85 1.0 0.01
 	Ks 1.0 1.0 1.0
-	Kabs 10.0 0.5 10.0
+	Kb 10.0 0.5 10.0
 	ior 1.460
+	Kr 0.1
 	shader 4
+
+newmtl gold_phong
+	Ns 5
+	d 1
+	Tr 0
+	Tf 1 1 1
+	illum 2
+    Ka 0.0 0.0 0.0
+	Kd 0.9 0.9 0.5
+	Ks 0.8 0.8 0.6
+    Ke 0.0 0.0 0.0
+	Kr 0.1
+    shader 7
