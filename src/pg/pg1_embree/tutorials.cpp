@@ -272,8 +272,8 @@ int staticSceneGeoSpheres(const char *config) {
 
 int staticSceneShip(const char *config) {
   Raytracer raytracer(
-      640*2,
-      480*2,
+      640,
+      480,
       deg2rad(45.0),
       glm::vec3(175, -140, 130),
       glm::vec3(0, 0, 35),
@@ -291,8 +291,8 @@ int staticSceneShip(const char *config) {
 
 int staticSceneCornellbox(const char *config) {
   Raytracer raytracer(
-      320,
-      240,
+      320 * 2,
+      240 * 2,
       deg2rad(40.0),
       glm::vec3(0, -940, 250),
       glm::vec3(0, 0, 250),

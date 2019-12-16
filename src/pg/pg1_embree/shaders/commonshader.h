@@ -19,6 +19,8 @@ public:
   
   static float ior;
   static ShadingType useShader;
+  static bool softShadows;
+  static int lightShadowsSamples;
 private:
   
   template<ShadingType T>

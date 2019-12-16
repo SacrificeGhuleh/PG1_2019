@@ -18,6 +18,9 @@
 ShadingType CommonShader::useShader = ShadingType::None;
 float CommonShader::ior = 1;
 
+bool CommonShader::softShadows = false;
+int CommonShader::lightShadowsSamples = 16;
+
 CommonShader::CommonShader(Camera *camera,
                            Light *light,
                            RTCScene *rtcScene,
@@ -343,39 +346,42 @@ glm::vec4 CommonShader::traceMaterial<ShadingType::Phong>(const RtcRayHitIor &ra
   glm::vec3 diffuse = dotNormalCamera * getDiffuseColor(material, tex_coord);
   
   //specular
-  glm::vec3 viewDir = (origin - worldPos);
-  viewDir = glm::normalize(viewDir);
   glm::vec3 phongReflectDir = glm::reflect(lightDir, shaderNormal);
-  float spec = powf(glm::dot(viewDir, phongReflectDir), material->shininess);
+  float spec = powf(glm::dot(direction, phongReflectDir), material->shininess);
   
   const glm::vec3 reflectDir = glm::normalize(
       (2.f * (directionToCamera * shaderNormal)) * shaderNormal - directionToCamera);
   
-  glm::vec3 specular;
-  if (depth <= 0) {
+  
+  glm::vec3 specular = material->specular * spec;
+  /*if (depth <= 0) {
     specular = glm::vec3(spec);
   } else {
     RtcRayHitIor reflectedRayHit = generateRay(worldPos, reflectDir, tNear_);
     
     glm::vec4 reflected = traceRay(reflectedRayHit, depth - 1);
     specular = glm::vec3(reflected.x * spec, reflected.y * spec, reflected.z * spec);
-  }
+  }*/
   
   //shadow
-//  float shadowVal = shadow(worldPos, lightDir, glm::l2Norm(lightPos));
-  
-  int shadowSamples = 16;
-  
   float shadowVal = 0;
   float pdf = 0;
   
-  for (int j = 0; j < shadowSamples; j++) {
-    const glm::vec3 lDir = hemisphereSampling(lightDir, pdf);
-    shadowVal += shadow(worldPos, lDir, glm::l2Norm(lightPos - worldPos));
+  if (softShadows) {
+    
+    shadowVal += shadow(worldPos, lightDir, glm::l2Norm(lightPos - worldPos));
+    
+    for (int i = 0; i < lightShadowsSamples; i++) {
+      const glm::vec3 lDir = hemisphereSampling(lightDir, pdf);
+      shadowVal += shadow(worldPos, lDir, glm::l2Norm(lightPos - worldPos));
+    }
+    
+    shadowVal /= static_cast<float>(lightShadowsSamples + 1);
+  } else {
+    //hard shadow
+    shadowVal = shadow(worldPos, lightDir, glm::l2Norm(lightPos));
   }
-  shadowVal += shadow(worldPos, lightDir, glm::l2Norm(lightPos - worldPos));
   
-  shadowVal /= static_cast<float>(shadowSamples + 1);
   
   return glm::vec4(
       ((shadowVal * diffuse.x) + specular.x),
@@ -445,7 +451,8 @@ glm::vec4 CommonShader::traceMaterial<ShadingType::Normals>(const RtcRayHitIor &
                                                             const float dotNormalCamera,
                                                             const int depth) {
   
-  
+  //Debug dot normal
+//  return glm::vec4(glm::vec3(dotNormalCamera), 1.0f);
   return glm::vec4(shaderNormal, 1.0f);
 }
 

@@ -45,8 +45,8 @@ Raytracer::Raytracer(const int width,
   
   light_ = new Light(lightPos, lightColor);
 
-//  sphericalMap_ = new SphericalMap("data/venice_sunset.jpg");
-  sphericalMap_ = new SphericalMap("data/field.jpg");
+  sphericalMap_ = new SphericalMap("data/venice_sunset.jpg");
+//  sphericalMap_ = new SphericalMap("data/field.jpg");
 //  sphericalMap_ = new SphericalMap("data/outdoor_umbrellas_4k.hdr");
   
   shader_ = new CommonShader(
@@ -157,8 +157,8 @@ void Raytracer::LoadScene(const std::string file_name) {
 }
 
 glm::vec4 Raytracer::get_pixel(const int x, const int y, const float t) {
-  if(x == width_/2 && y == height_/2){
-    (void)0;
+  if (x == width_ / 2 && y == height_ / 2) {
+    (void) 0;
   }
   return (shader_->getPixel(x, y));
 }
@@ -225,6 +225,8 @@ int Raytracer::Ui() {
         ImGui::SliderFloat("Ior", &CommonShader::ior,
                            0.5,
                            2.5);
+        ImGui::Separator();
+        
         break;
       }
       case ShadingType::PathTracing: {
@@ -234,7 +236,12 @@ int Raytracer::Ui() {
         break;
       }
       case ShadingType::Phong: {
+        ImGui::Checkbox("Soft shadows", &CommonShader::softShadows);
         
+        if (CommonShader::softShadows) {
+          ImGui::DragInt("Shadow samples", &CommonShader::lightShadowsSamples);
+        }
+        ImGui::Separator();
         
         break;
       }
@@ -245,7 +252,6 @@ int Raytracer::Ui() {
         break;
       }
     }
-    
     
     ImGui::DragInt("Max recursion", &Shader::recursionDepth_);
     
