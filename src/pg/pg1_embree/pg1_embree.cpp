@@ -13,9 +13,9 @@ int main() {
   try {
 //    staticSceneSphere();
 //    staticScenePathTracerSphere();
-//    staticSceneGeoSpheres();
+    staticSceneGeoSpheres();
 //    staticSceneShip();
-    staticSceneCornellbox();
+//    staticSceneCornellbox();
 //    staticSceneCornellboxMirrorTest();
   }
   catch (std::exception &e) {

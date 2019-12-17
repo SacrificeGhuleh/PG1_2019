@@ -6,7 +6,7 @@ newmtl Mat001
 	Kd 1.0 0 0
 	Ks 0.0 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat002
 	Ns 0.0
@@ -14,7 +14,7 @@ newmtl Mat002
 	Kd 0.75 0 0
 	Ks 0.25 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat003
 	Ns 0.0
@@ -22,7 +22,7 @@ newmtl Mat003
 	Kd 0.5 0 0
 	Ks 0.5 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat004
 	Ns 0.0
@@ -30,7 +30,7 @@ newmtl Mat004
 	Kd 0.25 0 0
 	Ks 0.75 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat005
 	Ns 0.0
@@ -38,7 +38,7 @@ newmtl Mat005
 	Kd 0.0 0 0
 	Ks 1.0 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat006
 	Ns 25.0
@@ -46,7 +46,7 @@ newmtl Mat006
 	Kd 1.0 0 0
 	Ks 0.0 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat007
 	Ns 25.0
@@ -54,7 +54,7 @@ newmtl Mat007
 	Kd 0.75 0 0
 	Ks 0.25 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat008
 	Ns 25.0
@@ -62,7 +62,7 @@ newmtl Mat008
 	Kd 0.5 0 0
 	Ks 0.5 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat009
 	Ns 25.0
@@ -70,7 +70,7 @@ newmtl Mat009
 	Kd 0.25 0 0
 	Ks 0.75 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat010
 	Ns 25.0
@@ -78,7 +78,7 @@ newmtl Mat010
 	Kd 0.0 0 0
 	Ks 1.0 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat011
 	Ns 100.0
@@ -86,7 +86,7 @@ newmtl Mat011
 	Kd 1.0 0 0
 	Ks 0.0 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat012
 	Ns 100.0
@@ -94,7 +94,7 @@ newmtl Mat012
 	Kd 0.75 0 0
 	Ks 0.25 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat013
 	Ns 100.0
@@ -102,7 +102,7 @@ newmtl Mat013
 	Kd 0.5 0 0
 	Ks 0.5 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat014
 	Ns 100.0
@@ -110,7 +110,7 @@ newmtl Mat014
 	Kd 0.25 0 0
 	Ks 0.75 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat015
 	Ns 100.0
@@ -118,7 +118,7 @@ newmtl Mat015
 	Kd 0.0 0 0
 	Ks 1.0 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat016
 	Ns 225.0
@@ -126,7 +126,7 @@ newmtl Mat016
 	Kd 1.0 0 0
 	Ks 0.0 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat017
 	Ns 225.0
@@ -134,7 +134,7 @@ newmtl Mat017
 	Kd 0.75 0 0
 	Ks 0.25 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat018
 	Ns 225.0
@@ -142,7 +142,7 @@ newmtl Mat018
 	Kd 0.5 0 0
 	Ks 0.5 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat019
 	Ns 225.0
@@ -150,7 +150,7 @@ newmtl Mat019
 	Kd 0.25 0 0
 	Ks 0.75 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat020
 	Ns 225.0
@@ -158,7 +158,7 @@ newmtl Mat020
 	Kd 0.0 0 0
 	Ks 1.0 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat021
 	Ns 400.0
@@ -166,7 +166,7 @@ newmtl Mat021
 	Kd 1.0 0 0
 	Ks 0.0 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat022
 	Ns 400.0
@@ -174,7 +174,7 @@ newmtl Mat022
 	Kd 0.75 0 0
 	Ks 0.25 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat023
 	Ns 400.0
@@ -182,7 +182,7 @@ newmtl Mat023
 	Kd 0.5 0 0
 	Ks 0.5 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat024
 	Ns 400.0
@@ -190,7 +190,7 @@ newmtl Mat024
 	Kd 0.25 0 0
 	Ks 0.75 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5
 
 newmtl Mat025
 	Ns 400.0
@@ -198,4 +198,4 @@ newmtl Mat025
 	Kd 0.0 0 0
 	Ks 1.0 0 0
 	Ke 0 0 0
-	shader 4
+	shader 5

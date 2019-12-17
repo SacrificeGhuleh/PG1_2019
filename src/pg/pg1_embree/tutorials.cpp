@@ -63,8 +63,9 @@ unsigned int add_triangle(const RTCDevice device, RTCScene scene) {
   rtcSetGeometryVertexAttributeCount(mesh, 2);
   
   // set vertex normals
-  glm::vec3 *normals = (glm::vec3 *) rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 0, RTC_FORMAT_FLOAT3,
-                                                           sizeof(glm::vec3), 3);
+  glm::vec3 *normals = (glm::vec3 *) rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 0,
+                                                             RTC_FORMAT_FLOAT3,
+                                                             sizeof(glm::vec3), 3);
   normals[0].x = 0;
   normals[0].y = 0;
   normals[0].z = 1;
@@ -77,7 +78,7 @@ unsigned int add_triangle(const RTCDevice device, RTCScene scene) {
   
   // set texture coordinates
   glm::vec2 *tex_coords = (glm::vec2 *) rtcSetNewGeometryBuffer(mesh, RTC_BUFFER_TYPE_VERTEX_ATTRIBUTE, 1,
-                                                            RTC_FORMAT_FLOAT2, sizeof(glm::vec2), 3);
+                                                                RTC_FORMAT_FLOAT2, sizeof(glm::vec2), 3);
   tex_coords[0].x = 0;
   tex_coords[0].y = 1;
   tex_coords[1].x = 1;
@@ -236,7 +237,7 @@ int staticSceneSphere(const char *config) {
   return EXIT_SUCCESS;
 }
 
-int staticScenePathTracerSphere(const char *config){
+int staticScenePathTracerSphere(const char *config) {
   Raytracer raytracer(
       640,
       480,
@@ -255,8 +256,8 @@ int staticScenePathTracerSphere(const char *config){
 
 int staticSceneGeoSpheres(const char *config) {
   Raytracer raytracer(
-      640 * 2,
-      480 * 2,
+      640,
+      480,
       deg2rad(45.0),
       glm::vec3(0, -1, 20),
       glm::vec3(0, 0, 0),
@@ -291,8 +292,8 @@ int staticSceneShip(const char *config) {
 
 int staticSceneCornellbox(const char *config) {
   Raytracer raytracer(
-      320 ,
-      240 ,
+      320 * 2,
+      240 * 2,
       deg2rad(40.0),
       glm::vec3(0, -940, 250),
       glm::vec3(0, 0, 250),

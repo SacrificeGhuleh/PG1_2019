@@ -11,7 +11,7 @@ newmtl white_lambert
 	Kd 0.95 0.95 0.95
 	Ks 0.0 0.0 0.0
     Ke 0.0 0.0 0.0
-	Kr 0.1
+	Kr 0.01
     shader 5
 
 newmtl red_lambert
@@ -24,7 +24,7 @@ newmtl red_lambert
 	Kd 0.95 0.05 0.05
 	Ks 0.0 0.0 0.0
     Ke 0.0 0.0 0.0
-	Kr 0.1
+	Kr 0.01
     shader 5
 
 newmtl green_lambert
@@ -37,7 +37,7 @@ newmtl green_lambert
 	Kd 0.05 0.95 0.05
 	Ks 0.0 0.0 0.0
     Ke 0.0 0.0 0.0
-	Kr 0.1
+	Kr 0.05
     shader 5
 
 newmtl white_light
@@ -45,7 +45,7 @@ newmtl white_light
 	Kd 1.0 0.0 0.0
 	Ks 1.0 1.0 1.0
     Ke 20.0 20.0 20.0
-	Kr 0.1
+	Kr 0.0
     shader 5
 
 newmtl white_phong
