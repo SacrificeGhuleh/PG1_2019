@@ -112,7 +112,7 @@ set(SHADERS
     src/pg/pg1_embree/shaders/shader.cpp
     src/pg/pg1_embree/shaders/shader.h
     src/pg/pg1_embree/shaders/commonshader.cpp
-    src/pg/pg1_embree/shaders/commonshader.h src/pg/pg1_embree/shaders/pathtracerhelper.cpp src/pg/pg1_embree/shaders/pathtracerhelper.h)
+    src/pg/pg1_embree/shaders/commonshader.h src/pg/pg1_embree/shaders/pathtracerhelper.cpp src/pg/pg1_embree/shaders/pathtracerhelper.h src/pg/pg1_embree/shaders/brdf.cpp src/pg/pg1_embree/shaders/brdf.h)
 
 set(UTILS
     src/pg/pg1_embree/utils/structs.h
@@ -130,7 +130,7 @@ set(SRC
 set(TESTS
     src/pg/pg1_embree/tests/test.h
     src/pg/pg1_embree/shaders/shadingtype.h
-    )
+    src/pg/pg1_embree/shaders/torrancesparrowbrdf.cpp src/pg/pg1_embree/shaders/torrancesparrowbrdf.h)
 
 add_executable(${PROJECT_NAME} ${SRC} ${UTILS} ${SHADERS} ${MATH} ${GEOMETRY} ${ENGINE} ${TESTS} ${IMGUI} ${PCH})
 

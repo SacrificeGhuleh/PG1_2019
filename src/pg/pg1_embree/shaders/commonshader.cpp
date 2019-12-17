@@ -13,6 +13,7 @@
 
 #include <geometry/material.h>
 #include <utils/utils.h>
+#include "torrancesparrowbrdf.h"
 
 
 ShadingType CommonShader::useShader = ShadingType::None;
@@ -403,9 +404,12 @@ glm::vec4 CommonShader::traceMaterial<ShadingType::Phong>(const RtcRayHitIor &ra
   float spec = powf(std::max<float>(glm::dot(shaderNormal, halfwayDir), 0.0), material->shininess);
   
   glm::vec3 specular = material->specular * spec;
-
   
-  return glm::vec4(diffuse + specular * spec , 1) + (reflected * material->reflectivity/* * spec*/);
+//  glm::vec3 torranceSparrow = TorranceSparrowBRDF::getBRDF(material, shaderNormal, lightDir, directionToCamera,
+//                                                           worldPos);
+  
+//  return glm::vec4(std::max<float>(glm::dot(shaderNormal, lightDir), 0) * torranceSparrow, 1);
+  return glm::vec4(diffuse + specular * spec, 1) + (reflected * material->reflectivity/* * spec*/);
 }
 
 template<>
