@@ -309,8 +309,8 @@ int staticSceneCornellbox(const char *config) {
 
 int staticSceneCornellboxMirrorTest(const char *config) {
   Raytracer raytracer(
-      320,
-      240,
+      320 * 2,
+      240 * 2,
       deg2rad(40.0),
       glm::vec3(0, -350, 250),
       glm::vec3(0, 105, 103),

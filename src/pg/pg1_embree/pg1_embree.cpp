@@ -11,9 +11,9 @@ int main() {
   testAll();
   
   try {
-//    staticSceneSphere();
+    staticSceneSphere();
 //    staticScenePathTracerSphere();
-    staticSceneGeoSpheres();
+//    staticSceneGeoSpheres();
 //    staticSceneShip();
 //    staticSceneCornellbox();
 //    staticSceneCornellboxMirrorTest();

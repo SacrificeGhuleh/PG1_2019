@@ -100,7 +100,7 @@ int LoadMTL(const char *file_name, const char *path, std::vector<Material *> &ma
         if (material != NULL) {
           material->set_name(material_name);
           if (!MaterialExists(materials, material_name)) {
-            materials.push_back(material);
+            materials.emplace_back(material);
             printf("\r%I64u material(s)\t\t", materials.size());
           }
         }
@@ -185,7 +185,7 @@ int LoadMTL(const char *file_name, const char *path, std::vector<Material *> &ma
   
   if (material != NULL) {
     material->set_name(material_name);
-    materials.push_back(material);
+    materials.emplace_back(material);
     printf("\r%I64u material(s)\t\t", materials.size());
   }
   material = NULL;
@@ -260,7 +260,7 @@ int LoadOBJ(const char *file_name, std::vector<Surface *> &surfaces, std::vector
       {
         sscanf(line, "%*s %s", &material_library);
         printf("Material library: %s\n", material_library);
-        material_libraries.push_back(std::string(path).append(std::string(material_library)));
+        material_libraries.emplace_back(std::string(path).append(std::string(material_library)));
       }
         break;
     }
@@ -297,7 +297,7 @@ int LoadOBJ(const char *file_name, std::vector<Surface *> &surfaces, std::vector
               sscanf(line, "%*s %f %f %f", &vertex.x, &vertex.y, &vertex.z);
             }
             
-            vertices.push_back(vertex);
+            vertices.emplace_back(vertex);
           }
             break;
           
@@ -313,7 +313,7 @@ int LoadOBJ(const char *file_name, std::vector<Surface *> &surfaces, std::vector
             }
 //            normal.Normalize();
             normal = glm::normalize(normal);
-            per_vertex_normals.push_back(normal);
+            per_vertex_normals.emplace_back(normal);
           }
             break;
           
@@ -323,7 +323,7 @@ int LoadOBJ(const char *file_name, std::vector<Surface *> &surfaces, std::vector
             float z = 0;
             sscanf(line, "%*s %f %f %f",
                    &texture_coord.x, &texture_coord.y, &z);
-            texture_coords.push_back(texture_coord);
+            texture_coords.emplace_back(texture_coord);
           }
             break;
         }
@@ -357,7 +357,7 @@ int LoadOBJ(const char *file_name, std::vector<Surface *> &surfaces, std::vector
       case 'g': // group
       {
         if (face_vertices.size() > 0) {
-          surfaces.push_back(BuildSurface(std::string(group_name), face_vertices));
+          surfaces.emplace_back(BuildSurface(std::string(group_name), face_vertices));
           printf("\r%I64u group(s)\t\t", surfaces.size());
           ++no_surfaces;
           face_vertices.clear();
@@ -413,7 +413,7 @@ int LoadOBJ(const char *file_name, std::vector<Surface *> &surfaces, std::vector
           const int texture_coord_index = atoi(vertex_indices[1]) - 1;
           const int per_vertex_normal_index = atoi(vertex_indices[2]) - 1;
           
-          face_vertices.push_back(Vertex(vertices[vertex_index],
+          face_vertices.emplace_back(Vertex(vertices[vertex_index],
                                          per_vertex_normals[per_vertex_normal_index],
                                          default_color, &texture_coords[texture_coord_index]));
         }
@@ -428,7 +428,7 @@ int LoadOBJ(const char *file_name, std::vector<Surface *> &surfaces, std::vector
             const int texture_coord_index = atoi(vertex_indices[1]) - 1;
             const int per_vertex_normal_index = atoi(vertex_indices[2]) - 1;
             
-            face_vertices.push_back(Vertex(vertices[vertex_index],
+            face_vertices.emplace_back(Vertex(vertices[vertex_index],
                                            per_vertex_normals[per_vertex_normal_index],
                                            default_color, &texture_coords[texture_coord_index]));
           }
@@ -441,7 +441,7 @@ int LoadOBJ(const char *file_name, std::vector<Surface *> &surfaces, std::vector
   }
   
   if (face_vertices.size() > 0) {
-    surfaces.push_back(BuildSurface(std::string(group_name), face_vertices));
+    surfaces.emplace_back(BuildSurface(std::string(group_name), face_vertices));
     printf("\r%I64u group(s)\t\t", surfaces.size());
     ++no_surfaces;
     face_vertices.clear();

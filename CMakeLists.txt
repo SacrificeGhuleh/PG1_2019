@@ -133,7 +133,8 @@ set(TESTS
     src/pg/pg1_embree/shaders/torrancesparrowbrdf.cpp src/pg/pg1_embree/shaders/torrancesparrowbrdf.h)
 
 add_executable(${PROJECT_NAME} ${SRC} ${UTILS} ${SHADERS} ${MATH} ${GEOMETRY} ${ENGINE} ${TESTS} ${IMGUI} ${PCH})
-
+add_executable(${PROJECT_NAME}x86 ${SRC} ${UTILS} ${SHADERS} ${MATH} ${GEOMETRY} ${ENGINE} ${TESTS} ${IMGUI} ${PCH})
+#set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_OPTIONS "-m32" LINK_FLAGS "-m32")
 
 find_package(OpenMP REQUIRED)
 if (OpenMP_CXX_FOUND)
