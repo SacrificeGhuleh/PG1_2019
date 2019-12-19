@@ -11,11 +11,11 @@ int main() {
   testAll();
   
   try {
-    staticSceneSphere();
+//    staticSceneSphere();
 //    staticScenePathTracerSphere();
 //    staticSceneGeoSpheres();
 //    staticSceneShip();
-//    staticSceneCornellbox();
+    staticSceneCornellbox();
 //    staticSceneCornellboxMirrorTest();
   }
   catch (std::exception &e) {
