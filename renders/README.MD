@@ -2,30 +2,38 @@
 ## Spaceship
 ### Common shader
 #### Soft shadows
-![Spaceship common soft](16-12-2019 18-50-22 Spaceship Common shader soft shadows 100 samples.png)
+![Spaceship common soft](https://raw.githubusercontent.com/SacrificeGhuleh/PG1_2019/master/renders/16-12-2019%2018-50-22%20Spaceship%20Common%20shader%20soft%20shadows%20100%20samples.png)
 - 100 samples
 #### Hard shadows
-![Spaceship common hard](16-12-2019 18-56-34 Spaceship Common shader hard shadows 90 samples.png)
+![Spaceship common hard](https://raw.githubusercontent.com/SacrificeGhuleh/PG1_2019/master/renders/16-12-2019%2018-56-34%20Spaceship%20Common%20shader%20hard%20shadows%2090%20samples.png)
 - 90 samples
 
 ### Phong shader
 #### Soft shadows
-![Spaceship phong soft](16-12-2019 18-59-37 Spaceship Phong shader hard shadows 400 samples.png)
+![Spaceship phong soft](https://raw.githubusercontent.com/SacrificeGhuleh/PG1_2019/master/renders/16-12-2019%2019-03-55%20Spaceship%20Phong%20shader%20soft%20shadows%20100%20samples.png)
 - 400 samples
 #### Hard shadows
-![Spaceship phong hard](16-12-2019 19-03-55 Spaceship Phong shader soft shadows 100 samples.png)
+![Spaceship phong hard](https://raw.githubusercontent.com/SacrificeGhuleh/PG1_2019/master/renders/16-12-2019%2018-59-37%20Spaceship%20Phong%20shader%20hard%20shadows%20400%20samples.png)
 - 100 samples
 
 ### Mirror shader
-![Spaceship mirror](16-12-2019 19-08-46 Spaceship Mirror shader 500 samples.png)
+![Spaceship mirror](https://raw.githubusercontent.com/SacrificeGhuleh/PG1_2019/master/renders/16-12-2019%2019-08-46%20Spaceship%20Mirror%20shader%20500%20samples.png)
 
 ### Normal shader
-![Spaceship normal](16-12-2019 19-09-32 Spaceship Normal shader 100 samples.png)
+![Spaceship normal](https://raw.githubusercontent.com/SacrificeGhuleh/PG1_2019/master/renders/16-12-2019%2019-09-32%20Spaceship%20Normal%20shader%20100%20samples.png)
 
 ## Cornellbox
 ### Common shader
-![Cornellbox path tracing](17-12-2019 10-02-36 Cornell box Common shader 14000 samples.png)
+![Cornellbox path tracing](https://raw.githubusercontent.com/SacrificeGhuleh/PG1_2019/master/renders/17-12-2019%2010-02-36%20Cornell%20box%20Common%20shader%2014000%20samples.png)
 - 14000 samples path tracing
 - Left sphere glass shader
 - Middle sphere mirror shader
 - Right sphere plastic phong material
+
+![Cornellbox path tracing](https://raw.githubusercontent.com/SacrificeGhuleh/PG1_2019/master/renders/19-12-2019%2006-23-24%20Common%20shader%2088000%20samples.png)
+- 88000 samples path tracing
+- Default material
+
+![Cornellbox path tracing](https://raw.githubusercontent.com/SacrificeGhuleh/PG1_2019/master/renders/18-12-2019%2022-38-22%20Common%20shader%2022000%20samples.png)
+- Three mirrors detail
+- 22000 samples
