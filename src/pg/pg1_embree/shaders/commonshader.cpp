@@ -404,10 +404,10 @@ glm::vec4 CommonShader::traceMaterial<ShadingType::Phong>(const RtcRayHitIor &ra
   float spec = powf(std::max<float>(glm::dot(shaderNormal, halfwayDir), 0.0), material->shininess);
   
   glm::vec3 specular = material->specular * spec;
-  
+
 //  glm::vec3 torranceSparrow = TorranceSparrowBRDF::getBRDF(material, shaderNormal, lightDir, directionToCamera,
 //                                                           worldPos);
-  
+
 //  return glm::vec4(std::max<float>(glm::dot(shaderNormal, lightDir), 0) * torranceSparrow, 1);
   return glm::vec4(diffuse + specular * spec, 1) + (reflected * material->reflectivity/* * spec*/);
 }
@@ -425,6 +425,13 @@ glm::vec4 CommonShader::traceMaterial<ShadingType::PathTracing>(const RtcRayHitI
                                                                 const glm::vec3 &shaderNormal,
                                                                 const float dotNormalCamera,
                                                                 const int depth) {
+  const int currentRecursion = recursionDepth_ - depth;
+  if (currentRecursion > 2) {
+    if (Random() >
+        (std::max<float>(material->diffuse.x, std::max<float>(material->diffuse.y, material->diffuse.z))) * 0.95f) {
+      return glm::vec4(0, 0, 0, 0);
+    }
+  }
   
   glm::vec3 emmision = glm::vec3{material->emission.x, material->emission.y, material->emission.z};
   
